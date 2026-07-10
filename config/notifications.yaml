@@ -1,0 +1,7 @@
+# Notification scaffold configuration
+notifications:
+  enabled: false
+  default_channel: webhook
+  retry_attempts: 3
+  retry_delay_seconds: 5
+  batch_size: 10

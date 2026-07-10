@@ -1,0 +1,7 @@
+# Monitoring and observability configuration
+monitoring:
+  enabled: true
+  heartbeat_interval_seconds: 30
+  startup_check_timeout_seconds: 10
+  shutdown_check_timeout_seconds: 10
+  collect_system_info: true

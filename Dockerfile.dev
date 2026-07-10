@@ -1,0 +1,33 @@
+# Development Dockerfile — foundation scaffold only
+FROM python:3.14-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV ENVIRONMENT=development
+
+COPY pyproject.toml requirements.txt ./
+COPY models ./models
+COPY config ./config
+COPY connectors ./connectors
+COPY events ./events
+COPY versioning ./versioning
+COPY audit ./audit
+COPY feature_flags ./feature_flags
+COPY research ./research
+COPY architecture ./architecture
+COPY health ./health
+COPY metrics ./metrics
+COPY platform_logging ./platform_logging
+COPY security ./security
+COPY notifications ./notifications
+COPY monitoring ./monitoring
+COPY scripts ./scripts
+COPY tests ./tests
+COPY docs ./docs
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e ".[dev]"
+
+CMD ["python", "scripts/validate_phase0.py"]

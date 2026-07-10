@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^(models|config|connectors|events|versioning|audit|feature_flags|research|architecture|health|metrics|platform_logging|security|notifications|monitoring|scripts|tests)/
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        files: ^(models|config|connectors|events|versioning|audit|feature_flags|research|architecture|health|metrics|platform_logging|security|notifications|monitoring|scripts|tests)/
+
+  - repo: local
+    hooks:
+      - id: validate-architecture
+        name: validate architecture
+        entry: python scripts/validate_architecture.py
+        language: system
+        pass_filenames: false
+        always_run: true

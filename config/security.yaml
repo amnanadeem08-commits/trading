@@ -1,0 +1,7 @@
+# Security scaffold configuration
+security:
+  rbac_enabled: false
+  token_ttl_seconds: 3600
+  encryption_algorithm: aes-256-gcm
+  hash_algorithm: sha256
+  audit_security_events: true

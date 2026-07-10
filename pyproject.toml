@@ -1,0 +1,375 @@
+[build-system]
+requires = ["setuptools>=69.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trading-platform"
+version = "0.1.0"
+description = "Enterprise Autonomous AI Trading Intelligence Platform"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "PyYAML>=6.0.2",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "mypy>=1.14.0",
+    "ruff>=0.9.0",
+    "black>=24.10.0",
+    "types-PyYAML>=6.0.12",
+    "import-linter>=2.1",
+    "pre-commit>=4.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["models*", "config*", "historical*", "connectors*", "events*", "versioning*", "audit*", "feature_flags*", "research*", "architecture*", "health*", "metrics*", "platform_logging*", "security*", "notifications*", "monitoring*", "services*", "pipeline*", "workflow*", "data*", "core*", "ml*", "ai*", "decision*", "risk*", "execution*", "plugins*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py314"]
+extend-exclude = "tests/test_llm_analyzer.py"
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+exclude = [
+    "connectors/binance_connector.py",
+    "connectors/psx_connector.py",
+    "core/indicators.py",
+    "core/sentiment.py",
+    "core/llm_analyzer.py",
+    "main.py",
+    "dashboard.py",
+    "config.py",
+    "tests/test_llm_analyzer.py",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "TCH", "PTH", "RUF",
+]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+explicit_package_bases = true
+mypy_path = "."
+packages = ["models", "config", "historical", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
+exclude = ["connectors/binance_connector\\.py", "connectors/psx_connector\\.py", "core/indicators\\.py", "core/sentiment\\.py", "core/llm_analyzer\\.py"]
+
+[[tool.mypy.overrides]]
+module = "yaml.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit", "tests/ml", "tests/ai", "tests/decision", "tests/risk", "tests/execution", "tests/connectors", "tests/paper", "tests/historical", "tests/contract", "tests/architecture", "tests/integration"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "validation: Validation script tests",
+    "contract: Contract tests",
+    "architecture: Architecture validation tests",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"models/**/*.py" = ["TC001"]
+"connectors/**/*.py" = ["TC001", "TC003", "A004"]
+"historical/**/*.py" = ["TC001", "TC003"]
+"connectors/exceptions.py" = ["A001", "TC001"]
+"tests/**/*.py" = ["TC001"]
+"tests/architecture/**/*.py" = ["TC001"]
+"feature_flags/**/*.py" = ["TC001"]
+"research/**/*.py" = ["TC001"]
+"events/**/*.py" = ["TC001", "TC003"]
+"audit/**/*.py" = ["TC001", "TC003"]
+"versioning/**/*.py" = ["TC001"]
+"architecture/**/*.py" = ["TC001", "TC003"]
+"health/**/*.py" = ["TC001", "TC003"]
+"metrics/**/*.py" = ["TC001", "TC003"]
+"platform_logging/**/*.py" = ["TC001", "TC003"]
+"security/**/*.py" = ["TC001", "TC003"]
+"notifications/**/*.py" = ["TC001", "TC003"]
+"monitoring/**/*.py" = ["TC001", "TC003"]
+"services/**/*.py" = ["TC001", "TC003"]
+"pipeline/**/*.py" = ["TC001", "TC003"]
+"workflow/**/*.py" = ["TC001", "TC003"]
+"data/**/*.py" = ["TC001", "TC003"]
+"core/**/*.py" = ["TC001", "TC003"]
+"ml/**/*.py" = ["TC001", "TC003"]
+"ai/**/*.py" = ["TC001", "TC003"]
+"decision/**/*.py" = ["TC001", "TC003"]
+"risk/**/*.py" = ["TC001", "TC003"]
+"execution/**/*.py" = ["TC001", "TC003"]
+"plugins/**/*.py" = ["TC001", "TC003"]
+"scripts/**/*.py" = ["T201", "E501", "TC003", "UP036", "SIM108", "RUF005", "RUF100", "I001"]
+
+[tool.coverage.run]
+source = ["models", "config", "historical", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
+omit = [
+    "connectors/binance_connector.py",
+    "connectors/psx_connector.py",
+    "connectors/base.py",
+    "connectors/market_registry.py",
+    "connectors/normalizer.py",
+    "connectors/metadata.py",
+    "connectors/capabilities.py",
+    "connectors/health.py",
+    "core/indicators.py",
+    "core/sentiment.py",
+    "core/llm_analyzer.py",
+]
+branch = true
+
+[tool.coverage.report]
+fail_under = 88
+show_missing = true
+
+[tool.importlinter]
+root_packages = [
+    "models",
+    "config",
+    "historical",
+    "connectors",
+    "events",
+    "versioning",
+    "audit",
+    "feature_flags",
+    "research",
+    "architecture",
+    "health",
+    "metrics",
+    "platform_logging",
+    "security",
+    "notifications",
+    "monitoring",
+    "services",
+    "pipeline",
+    "workflow",
+    "data",
+    "core",
+    "ml",
+    "ai",
+    "decision",
+    "risk",
+    "execution",
+    "plugins",
+]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Foundation packages must not import connectors"
+type = "forbidden"
+source_modules = [
+    "models",
+    "config",
+    "events",
+    "versioning",
+    "audit",
+    "feature_flags",
+    "architecture",
+    "health",
+    "metrics",
+    "platform_logging",
+    "security",
+    "notifications",
+    "monitoring",
+]
+forbidden_modules = ["connectors"]
+
+[[tool.importlinter.contracts]]
+name = "Production must not import research"
+type = "forbidden"
+source_modules = [
+    "models",
+    "config",
+    "historical",
+    "connectors",
+    "events",
+    "versioning",
+    "audit",
+    "feature_flags",
+    "architecture",
+    "health",
+    "metrics",
+    "platform_logging",
+    "security",
+    "notifications",
+    "monitoring",
+]
+forbidden_modules = ["research"]
+
+[[tool.importlinter.contracts]]
+name = "Services must not import connectors"
+type = "forbidden"
+source_modules = ["services"]
+forbidden_modules = ["connectors"]
+
+[[tool.importlinter.contracts]]
+name = "Pipeline must not import forbidden layers"
+type = "forbidden"
+source_modules = ["pipeline"]
+forbidden_modules = ["connectors", "ml", "ai", "risk", "execution", "api", "dashboard"]
+
+[[tool.importlinter.contracts]]
+name = "Workflow must not import forbidden layers"
+type = "forbidden"
+source_modules = ["workflow"]
+forbidden_modules = ["connectors", "ml", "ai", "risk", "execution", "api", "dashboard"]
+
+[[tool.importlinter.contracts]]
+name = "Plugins must not import forbidden layers"
+type = "forbidden"
+source_modules = ["plugins"]
+forbidden_modules = ["connectors", "ml", "ai", "llm", "risk", "execution", "api", "dashboard"]
+
+[[tool.importlinter.contracts]]
+name = "Historical must not import forbidden layers"
+type = "forbidden"
+source_modules = ["historical"]
+forbidden_modules = [
+    "connectors",
+    "core",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Data must not import forbidden layers"
+type = "forbidden"
+source_modules = ["data"]
+forbidden_modules = [
+    "connectors",
+    "core",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Core must not import forbidden layers"
+type = "forbidden"
+source_modules = ["core"]
+forbidden_modules = [
+    "connectors",
+    "ai",
+    "llm",
+    "ml",
+    "decision",
+    "risk",
+    "execution",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "ML must not import forbidden layers"
+type = "forbidden"
+source_modules = ["ml"]
+forbidden_modules = [
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "AI must not import forbidden layers"
+type = "forbidden"
+source_modules = ["ai"]
+forbidden_modules = [
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Decision must not import forbidden layers"
+type = "forbidden"
+source_modules = ["decision"]
+forbidden_modules = [
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Risk must not import forbidden layers"
+type = "forbidden"
+source_modules = ["risk"]
+forbidden_modules = [
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Execution must not import forbidden layers"
+type = "forbidden"
+source_modules = ["execution"]
+forbidden_modules = [
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Connectors must not import forbidden layers"
+type = "forbidden"
+source_modules = ["connectors"]
+forbidden_modules = [
+    "services",
+    "pipeline",
+    "workflow",
+    "dashboard",
+    "api",
+    "research",
+]

@@ -1,0 +1,97 @@
+{
+  "generated_at": "2026-07-10T02:40:11.334289+00:00",
+  "files_scanned": 322,
+  "violations": 0,
+  "checks": [
+    {
+      "name": "dependency_audit",
+      "passed": true,
+      "detail": "Scanned 322 files, 0 violations"
+    },
+    {
+      "name": "public_api_freeze",
+      "passed": true,
+      "detail": "All 10 packages have verified __all__ exports"
+    },
+    {
+      "name": "architecture_validator",
+      "passed": true,
+      "detail": "Scanned 0 files, 0 violations"
+    },
+    {
+      "name": "import_linter",
+      "passed": true,
+      "detail": "Import-linter contracts kept"
+    },
+    {
+      "name": "dependency_validator",
+      "passed": true,
+      "detail": "Dependencies validated"
+    },
+    {
+      "name": "performance_baseline",
+      "passed": true,
+      "detail": "Baseline measurements collected"
+    },
+    {
+      "name": "plugin_compatibility",
+      "passed": true,
+      "detail": "All plugin compatibility checks passed"
+    },
+    {
+      "name": "configuration_validation",
+      "passed": true,
+      "detail": "All 10 layer configs present, hash stable"
+    },
+    {
+      "name": "overall_coverage",
+      "passed": true,
+      "detail": "Overall coverage >= 88%"
+    },
+    {
+      "name": "coverage_data",
+      "passed": true,
+      "detail": "data coverage 96.02% (threshold 90%)"
+    },
+    {
+      "name": "coverage_core",
+      "passed": true,
+      "detail": "core coverage 98.11% (threshold 90%)"
+    },
+    {
+      "name": "coverage_ml",
+      "passed": true,
+      "detail": "ml coverage 91.96% (threshold 90%)"
+    },
+    {
+      "name": "coverage_ai",
+      "passed": true,
+      "detail": "ai coverage 95.11% (threshold 90%)"
+    },
+    {
+      "name": "coverage_decision",
+      "passed": true,
+      "detail": "decision coverage 98.52% (threshold 90%)"
+    },
+    {
+      "name": "coverage_risk",
+      "passed": true,
+      "detail": "risk coverage 98.19% (threshold 90%)"
+    },
+    {
+      "name": "ruff",
+      "passed": true,
+      "detail": "ruff passed"
+    },
+    {
+      "name": "black",
+      "passed": true,
+      "detail": "black passed"
+    },
+    {
+      "name": "mypy",
+      "passed": true,
+      "detail": "mypy passed"
+    }
+  ]
+}

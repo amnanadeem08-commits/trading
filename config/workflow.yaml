@@ -1,0 +1,9 @@
+# Workflow runtime configuration
+workflow:
+  job_timeout_seconds: 300
+  workflow_timeout_seconds: 3600
+  checkpoint_enabled: true
+  recovery_enabled: true
+  queue_enabled: true
+  max_jobs_per_workflow: 50
+  graceful_shutdown: true

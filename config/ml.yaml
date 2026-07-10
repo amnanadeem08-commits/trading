@@ -1,0 +1,10 @@
+# ML layer configuration
+ml:
+  registry_enabled: true
+  max_models: 100
+  training_enabled: true
+  inference_enabled: true
+  evaluation_enabled: true
+  feature_pipeline_enabled: true
+  lifecycle_enabled: true
+  versioning_enabled: true

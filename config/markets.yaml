@@ -1,0 +1,3 @@
+# Registered markets (Rule R10 — plugin registry)
+# Connectors are registered here. No implementations in Phase 0.
+markets: []

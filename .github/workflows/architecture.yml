@@ -1,0 +1,20 @@
+name: Architecture
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install -e ".[dev]"
+      - run: python scripts/validate_architecture.py
+      - run: python -c "from importlinter.cli import lint_imports_command; lint_imports_command()"
+      - run: python -m pytest tests/architecture -m architecture -v

@@ -1,0 +1,8 @@
+# Decision layer configuration
+decision:
+  registry_enabled: true
+  max_engines: 100
+  policy_enabled: true
+  evaluation_enabled: true
+  lifecycle_enabled: true
+  versioning_enabled: true

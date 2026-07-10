@@ -1,0 +1,9 @@
+# Paper adapter configuration
+paper_adapter:
+  enabled: true
+  deterministic: true
+  random_seed: 42
+  failure_rate: 0.0
+  latency_ms_min: 1
+  latency_ms_max: 50
+  simulate_delay: false

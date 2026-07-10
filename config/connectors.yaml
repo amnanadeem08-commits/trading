@@ -1,0 +1,8 @@
+# Connector framework configuration
+connectors:
+  registry_enabled: true
+  max_adapters: 100
+  validation_enabled: true
+  dispatch_bridge_enabled: true
+  lifecycle_enabled: true
+  versioning_enabled: true

@@ -1,0 +1,10 @@
+# Data layer configuration
+data:
+  max_datasets: 100
+  cache_enabled: true
+  cache_max_entries: 100
+  validation_enabled: true
+  lineage_enabled: true
+  provenance_enabled: true
+  persistence_enabled: true
+  max_schema_fields: 200

@@ -1,0 +1,8 @@
+# Platform service layer configuration
+services:
+  auto_discovery: true
+  graceful_shutdown: true
+  startup_validation: true
+  shutdown_validation: true
+  startup_timeout_seconds: 30
+  shutdown_timeout_seconds: 30

@@ -1,0 +1,9 @@
+# Pipeline engine configuration
+pipeline:
+  stage_timeout_seconds: 60
+  pipeline_timeout_seconds: 300
+  rollback_enabled: true
+  cleanup_enabled: true
+  graceful_shutdown: true
+  cancellation_enabled: true
+  max_stages: 50

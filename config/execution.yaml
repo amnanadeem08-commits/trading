@@ -1,0 +1,9 @@
+# Execution layer configuration
+execution:
+  registry_enabled: true
+  max_engines: 100
+  validation_enabled: true
+  dispatch_enabled: true
+  lifecycle_enabled: true
+  versioning_enabled: true
+  queue_max_size: 1000

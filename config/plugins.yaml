@@ -1,0 +1,9 @@
+# Plugin framework configuration
+plugins:
+  auto_discovery: true
+  startup_validation: true
+  max_plugins: 100
+  graceful_shutdown: true
+  sandbox_enabled: false
+  platform_version: "0.1.0"
+  platform_api_version: "1.0.0"

@@ -1,0 +1,8 @@
+# Core runtime configuration
+core:
+  context_enabled: true
+  audit_enabled: true
+  security_enabled: true
+  max_entities: 100
+  trace_enabled: true
+  lifecycle_enabled: true

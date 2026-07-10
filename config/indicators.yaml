@@ -1,0 +1,6 @@
+# Technical indicator parameters (Rule R16 — configuration over code)
+indicators:
+  rsi_period: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9

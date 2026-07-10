@@ -1,0 +1,9 @@
+# Structured logging configuration
+logging:
+  level: INFO
+  format: json
+  include_correlation_id: true
+  include_trace_id: true
+  include_request_id: true
+  file_path: null
+  console_enabled: true

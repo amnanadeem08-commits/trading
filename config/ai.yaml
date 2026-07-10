@@ -1,0 +1,12 @@
+# AI layer configuration
+ai:
+  registry_enabled: true
+  max_agents: 100
+  orchestration_enabled: true
+  prompt_enabled: true
+  llm_enabled: true
+  reasoning_enabled: true
+  memory_enabled: true
+  evaluation_enabled: true
+  lifecycle_enabled: true
+  versioning_enabled: true
