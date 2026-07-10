@@ -1,0 +1,9 @@
+# Feature store configuration
+feature_store:
+  validation_enabled: true
+  cache_enabled: true
+  versioning_enabled: true
+  snapshot_enabled: true
+  offline_retrieval_enabled: true
+  online_retrieval_enabled: true
+  cache_max_entries: 1000

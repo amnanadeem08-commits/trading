@@ -34,6 +34,15 @@ def test_core_must_not_import_forbidden_layers() -> None:
     blocked = FORBIDDEN_IMPORT_PAIRS["core"]
     assert blocked == frozenset(
         {
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
             "ai",
             "connectors",
             "ml",
@@ -62,6 +71,98 @@ def test_ml_must_not_import_forbidden_layers() -> None:
             "api",
             "dashboard",
             "research",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_data_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["data"]
+    assert "feature_store" in blocked
+
+
+@pytest.mark.architecture
+def test_feature_store_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["feature_store"]
+    assert blocked == frozenset(
+        {
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_model_registry_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["model_registry"]
+    assert blocked == frozenset(
+        {
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_training_pipeline_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["training_pipeline"]
+    assert blocked == frozenset(
+        {
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
         }
     )
 
@@ -107,6 +208,153 @@ def test_risk_must_not_import_forbidden_layers() -> None:
             "api",
             "dashboard",
             "research",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_ml_engine_plugins_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["ml_engine_plugins"]
+    assert blocked == frozenset(
+        {
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_ml_runtime_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["ml_runtime"]
+    assert blocked == frozenset(
+        {
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_inference_pipeline_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["inference_pipeline"]
+    assert blocked == frozenset(
+        {
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_framework_adapters_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["framework_adapters"]
+    assert blocked == frozenset(
+        {
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_artifact_management_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["artifact_management"]
+    assert blocked == frozenset(
+        {
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    )
+
+
+@pytest.mark.architecture
+def test_storage_providers_must_not_import_forbidden_layers() -> None:
+    blocked = FORBIDDEN_IMPORT_PAIRS["storage_providers"]
+    assert blocked == frozenset(
+        {
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
         }
     )
 

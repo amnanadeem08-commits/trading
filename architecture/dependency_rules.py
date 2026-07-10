@@ -10,24 +10,46 @@ from enum import IntEnum
 
 class PipelineLayer(IntEnum):
     HISTORICAL = 0
-    CONNECTORS = 1
-    DATA = 2
-    CORE = 3
-    ML = 4
-    AI = 5
-    AGENTS = 6
-    DECISION = 7
-    RISK = 8
-    EXECUTION = 9
+    MARKET_DATA = 1
+    FEATURE_ENGINEERING = 2
+    CONNECTORS = 3
+    DATA = 4
+    CORE = 5
+    FEATURE_STORE = 6
+    TRAINING_PIPELINE = 7
+    MODEL_REGISTRY = 8
+    INFERENCE_PIPELINE = 9
+    ML_RUNTIME = 10
+    ML_ENGINE_PLUGINS = 11
+    FRAMEWORK_ADAPTERS = 12
+    ARTIFACT_MANAGEMENT = 13
+    STORAGE_PROVIDERS = 14
+    ML = 15
+    AI = 16
+    AGENTS = 17
+    DECISION = 18
+    RISK = 19
+    EXECUTION = 20
 
 
 PIPELINE_LAYER_ORDER: tuple[PipelineLayer, ...] = tuple(PipelineLayer)
 
 PIPELINE_PACKAGES: dict[str, PipelineLayer] = {
     "historical": PipelineLayer.HISTORICAL,
+    "market_data": PipelineLayer.MARKET_DATA,
+    "feature_engineering": PipelineLayer.FEATURE_ENGINEERING,
     "connectors": PipelineLayer.CONNECTORS,
     "data": PipelineLayer.DATA,
     "core": PipelineLayer.CORE,
+    "feature_store": PipelineLayer.FEATURE_STORE,
+    "training_pipeline": PipelineLayer.TRAINING_PIPELINE,
+    "model_registry": PipelineLayer.MODEL_REGISTRY,
+    "inference_pipeline": PipelineLayer.INFERENCE_PIPELINE,
+    "ml_runtime": PipelineLayer.ML_RUNTIME,
+    "ml_engine_plugins": PipelineLayer.ML_ENGINE_PLUGINS,
+    "framework_adapters": PipelineLayer.FRAMEWORK_ADAPTERS,
+    "artifact_management": PipelineLayer.ARTIFACT_MANAGEMENT,
+    "storage_providers": PipelineLayer.STORAGE_PROVIDERS,
     "ml": PipelineLayer.ML,
     "ai": PipelineLayer.AI,
     "agents": PipelineLayer.AGENTS,
@@ -135,6 +157,15 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     ),
     "data": frozenset(
         {
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
             "connectors",
             "core",
             "ml",
@@ -150,6 +181,15 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     ),
     "core": frozenset(
         {
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
             "ai",
             "connectors",
             "ml",
@@ -160,6 +200,194 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "api",
             "dashboard",
             "research",
+        }
+    ),
+    "feature_store": frozenset(
+        {
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "training_pipeline": frozenset(
+        {
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "model_registry": frozenset(
+        {
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "inference_pipeline": frozenset(
+        {
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "ml_runtime": frozenset(
+        {
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "ml_engine_plugins": frozenset(
+        {
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "framework_adapters": frozenset(
+        {
+            "artifact_management",
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "artifact_management": frozenset(
+        {
+            "storage_providers",
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "storage_providers": frozenset(
+        {
+            "ml",
+            "ai",
+            "llm",
+            "decision",
+            "risk",
+            "execution",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
         }
     ),
     "ml": frozenset(
@@ -215,6 +443,70 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     ),
     "historical": frozenset(
         {
+            "market_data",
+            "feature_engineering",
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "connectors",
+            "core",
+            "ml",
+            "ai",
+            "decision",
+            "risk",
+            "execution",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "market_data": frozenset(
+        {
+            "feature_engineering",
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
+            "connectors",
+            "core",
+            "ml",
+            "ai",
+            "decision",
+            "risk",
+            "execution",
+            "api",
+            "dashboard",
+            "research",
+            "services",
+            "pipeline",
+            "workflow",
+        }
+    ),
+    "feature_engineering": frozenset(
+        {
+            "feature_store",
+            "training_pipeline",
+            "model_registry",
+            "inference_pipeline",
+            "ml_runtime",
+            "ml_engine_plugins",
+            "framework_adapters",
+            "artifact_management",
+            "storage_providers",
             "connectors",
             "core",
             "ml",
@@ -267,6 +559,14 @@ RESEARCH_FORBIDDEN_SOURCES: frozenset[str] = PRODUCTION_PACKAGES | frozenset(
         "plugins",
         "data",
         "historical",
+        "market_data",
+        "feature_engineering",
+        "feature_store",
+        "training_pipeline",
+        "model_registry",
+        "inference_pipeline",
+        "ml_runtime",
+        "ml_engine_plugins",
         "core",
         "ml",
         "ai",
@@ -280,6 +580,9 @@ RESEARCH_FORBIDDEN_SOURCES: frozenset[str] = PRODUCTION_PACKAGES | frozenset(
 CONNECTOR_BRIDGE_IMPORTS: frozenset[str] = frozenset(
     {
         "historical",
+        "market_data",
+        "feature_engineering",
+        "feature_store",
         "data",
         "core",
         "ml",
@@ -404,6 +707,16 @@ RULE_IDS: dict[str, str] = {
     "risk_boundary": "R11",
     "execution_boundary": "R11",
     "connector_boundary": "R10",
+    "feature_engineering_boundary": "R11",
+    "feature_store_boundary": "R11",
+    "training_pipeline_boundary": "R11",
+    "model_registry_boundary": "R11",
+    "inference_pipeline_boundary": "R11",
+    "ml_runtime_boundary": "R11",
+    "ml_engine_plugins_boundary": "R11",
+    "framework_adapters_boundary": "R11",
+    "artifact_management_boundary": "R11",
+    "storage_providers_boundary": "R11",
     "layer_rule": "R11",
     "presentation_boundary": "R12",
 }

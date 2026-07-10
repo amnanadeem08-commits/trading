@@ -15,4 +15,4 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install -e ".[dev]"
-      - run: python -m mypy models config connectors events versioning audit feature_flags research architecture health metrics platform_logging security notifications monitoring services pipeline workflow data core ml ai decision risk execution plugins
+      - run: python -m mypy models config historical market_data feature_engineering feature_store training_pipeline model_registry inference_pipeline ml_runtime ml_engine_plugins framework_adapters artifact_management storage_providers connectors events versioning audit feature_flags research architecture health metrics platform_logging security notifications monitoring services pipeline workflow data core ml ai decision risk execution plugins

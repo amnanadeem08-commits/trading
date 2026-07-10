@@ -1,0 +1,7 @@
+# Market data framework configuration
+market_data:
+  validation_enabled: true
+  normalization_enabled: true
+  stream_buffer_size: 100
+  batch_size: 10
+  versioning_enabled: true

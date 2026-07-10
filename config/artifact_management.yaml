@@ -1,0 +1,11 @@
+# Artifact management configuration
+artifact_management:
+  enabled: true
+  default_scheme: local
+  validation_enabled: true
+  cache_enabled: true
+  cache_max_entries: 1000
+  health_check_interval: 60
+  metrics_enabled: true
+  lifecycle_enabled: true
+  sandbox_mode: true

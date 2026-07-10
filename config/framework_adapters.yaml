@@ -1,0 +1,16 @@
+# Framework adapter configuration
+framework_adapters:
+  enabled: true
+  default_engine_type: stub
+  default_adapter: stub-framework-adapter
+  adapter_priorities:
+    stub: 100
+    onnx: 200
+  auto_discovery: true
+  validation_enabled: true
+  health_check_interval: 60
+  metrics_enabled: true
+  lifecycle_enabled: true
+  sandbox_mode: true
+  warm_start: true
+  preload_default_models: true

@@ -1,0 +1,8 @@
+# Feature engineering framework configuration
+feature_engineering:
+  validation_enabled: true
+  extraction_enabled: true
+  schema_validation_enabled: true
+  batch_size: 10
+  window_size: 1
+  versioning_enabled: true

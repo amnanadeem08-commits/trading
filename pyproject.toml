@@ -13,6 +13,8 @@ dependencies = [
     "pydantic-settings>=2.7.0",
     "PyYAML>=6.0.2",
     "python-dotenv>=1.0.0",
+    "numpy>=1.24.0",
+    "onnxruntime>=1.17.0",
 ]
 
 [project.optional-dependencies]
@@ -25,11 +27,12 @@ dev = [
     "types-PyYAML>=6.0.12",
     "import-linter>=2.1",
     "pre-commit>=4.0.0",
+    "onnx>=1.16.0",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["models*", "config*", "historical*", "connectors*", "events*", "versioning*", "audit*", "feature_flags*", "research*", "architecture*", "health*", "metrics*", "platform_logging*", "security*", "notifications*", "monitoring*", "services*", "pipeline*", "workflow*", "data*", "core*", "ml*", "ai*", "decision*", "risk*", "execution*", "plugins*"]
+include = ["models*", "config*", "historical*", "market_data*", "feature_engineering*", "feature_store*", "training_pipeline*", "model_registry*", "inference_pipeline*", "ml_runtime*", "ml_engine_plugins*", "framework_adapters*", "artifact_management*", "storage_providers*", "connectors*", "events*", "versioning*", "audit*", "feature_flags*", "research*", "architecture*", "health*", "metrics*", "platform_logging*", "security*", "notifications*", "monitoring*", "services*", "pipeline*", "workflow*", "data*", "core*", "ml*", "ai*", "decision*", "risk*", "execution*", "plugins*"]
 
 [tool.black]
 line-length = 100
@@ -69,15 +72,23 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 explicit_package_bases = true
 mypy_path = "."
-packages = ["models", "config", "historical", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
+packages = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
 exclude = ["connectors/binance_connector\\.py", "connectors/psx_connector\\.py", "core/indicators\\.py", "core/sentiment\\.py", "core/llm_analyzer\\.py"]
 
 [[tool.mypy.overrides]]
 module = "yaml.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "onnxruntime.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "numpy.*"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
-testpaths = ["tests/unit", "tests/ml", "tests/ai", "tests/decision", "tests/risk", "tests/execution", "tests/connectors", "tests/paper", "tests/historical", "tests/contract", "tests/architecture", "tests/integration"]
+testpaths = ["tests/unit", "tests/ml", "tests/ai", "tests/decision", "tests/risk", "tests/execution", "tests/connectors", "tests/paper", "tests/historical", "tests/market_data", "tests/feature_engineering", "tests/feature_store", "tests/training_pipeline", "tests/model_registry", "tests/inference_pipeline", "tests/ml_runtime", "tests/ml_engine_plugins", "tests/framework_adapters", "tests/artifact_management", "tests/storage_providers", "tests/contract", "tests/architecture", "tests/integration"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
 markers = [
@@ -92,6 +103,17 @@ markers = [
 "models/**/*.py" = ["TC001"]
 "connectors/**/*.py" = ["TC001", "TC003", "A004"]
 "historical/**/*.py" = ["TC001", "TC003"]
+"market_data/**/*.py" = ["TC001", "TC003"]
+"feature_engineering/**/*.py" = ["TC001", "TC003"]
+"feature_store/**/*.py" = ["TC001", "TC003"]
+"training_pipeline/**/*.py" = ["TC001", "TC003"]
+"model_registry/**/*.py" = ["TC001", "TC003"]
+"inference_pipeline/**/*.py" = ["TC001", "TC003"]
+"ml_runtime/**/*.py" = ["TC001", "TC003"]
+"ml_engine_plugins/**/*.py" = ["TC001", "TC003"]
+"framework_adapters/**/*.py" = ["TC001", "TC003"]
+"artifact_management/**/*.py" = ["TC001", "TC003"]
+"storage_providers/**/*.py" = ["TC001", "TC003"]
 "connectors/exceptions.py" = ["A001", "TC001"]
 "tests/**/*.py" = ["TC001"]
 "tests/architecture/**/*.py" = ["TC001"]
@@ -121,7 +143,7 @@ markers = [
 "scripts/**/*.py" = ["T201", "E501", "TC003", "UP036", "SIM108", "RUF005", "RUF100", "I001"]
 
 [tool.coverage.run]
-source = ["models", "config", "historical", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
+source = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "execution", "plugins"]
 omit = [
     "connectors/binance_connector.py",
     "connectors/psx_connector.py",
@@ -146,6 +168,17 @@ root_packages = [
     "models",
     "config",
     "historical",
+    "market_data",
+    "feature_engineering",
+    "feature_store",
+    "training_pipeline",
+    "model_registry",
+    "inference_pipeline",
+    "ml_runtime",
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
     "connectors",
     "events",
     "versioning",
@@ -261,6 +294,48 @@ forbidden_modules = [
 ]
 
 [[tool.importlinter.contracts]]
+name = "Market data must not import forbidden layers"
+type = "forbidden"
+source_modules = ["market_data"]
+forbidden_modules = [
+    "connectors",
+    "core",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Feature engineering must not import forbidden layers"
+type = "forbidden"
+source_modules = ["feature_engineering"]
+forbidden_modules = [
+    "connectors",
+    "core",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
 name = "Data must not import forbidden layers"
 type = "forbidden"
 source_modules = ["data"]
@@ -293,6 +368,220 @@ forbidden_modules = [
     "api",
     "dashboard",
     "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Feature store must not import forbidden layers"
+type = "forbidden"
+source_modules = ["feature_store"]
+forbidden_modules = [
+    "training_pipeline",
+    "model_registry",
+    "inference_pipeline",
+    "ml_runtime",
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Training pipeline must not import forbidden layers"
+type = "forbidden"
+source_modules = ["training_pipeline"]
+forbidden_modules = [
+    "model_registry",
+    "inference_pipeline",
+    "ml_runtime",
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Model registry must not import forbidden layers"
+type = "forbidden"
+source_modules = ["model_registry"]
+forbidden_modules = [
+    "inference_pipeline",
+    "ml_runtime",
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Inference pipeline must not import forbidden layers"
+type = "forbidden"
+source_modules = ["inference_pipeline"]
+forbidden_modules = [
+    "ml_runtime",
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "ML runtime must not import forbidden layers"
+type = "forbidden"
+source_modules = ["ml_runtime"]
+forbidden_modules = [
+    "ml_engine_plugins",
+    "framework_adapters",
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "ML engine plugins must not import forbidden layers"
+type = "forbidden"
+source_modules = ["ml_engine_plugins"]
+forbidden_modules = [
+    "framework_adapters",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Framework adapters must not import forbidden layers"
+type = "forbidden"
+source_modules = ["framework_adapters"]
+forbidden_modules = [
+    "artifact_management",
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Artifact management must not import forbidden layers"
+type = "forbidden"
+source_modules = ["artifact_management"]
+forbidden_modules = [
+    "storage_providers",
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "Storage providers must not import forbidden layers"
+type = "forbidden"
+source_modules = ["storage_providers"]
+forbidden_modules = [
+    "ml",
+    "ai",
+    "llm",
+    "decision",
+    "risk",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+    "services",
+    "pipeline",
+    "workflow",
 ]
 
 [[tool.importlinter.contracts]]

@@ -1,0 +1,9 @@
+# ML engine plugin configuration
+ml_engine:
+  enabled_plugins:
+    - stub-engine
+  default_plugin: stub-engine
+  sandbox_mode: true
+  auto_discovery: true
+  health_check_interval: 60
+  allow_hot_reload: false

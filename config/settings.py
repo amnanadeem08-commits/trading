@@ -222,6 +222,153 @@ class HistoricalSettings(PlatformModel):
     validation_enabled: bool = True
 
 
+class MarketDataSettings(PlatformModel):
+    """Market data framework configuration."""
+
+    validation_enabled: bool = True
+    normalization_enabled: bool = True
+    stream_buffer_size: int = Field(ge=1, default=100)
+    batch_size: int = Field(ge=1, default=10)
+    versioning_enabled: bool = True
+
+
+class FeatureEngineeringSettings(PlatformModel):
+    """Feature engineering framework configuration."""
+
+    validation_enabled: bool = True
+    extraction_enabled: bool = True
+    schema_validation_enabled: bool = True
+    batch_size: int = Field(ge=1, default=10)
+    window_size: int = Field(ge=1, default=1)
+    versioning_enabled: bool = True
+
+
+class FeatureStoreSettings(PlatformModel):
+    """Feature store configuration."""
+
+    validation_enabled: bool = True
+    cache_enabled: bool = True
+    versioning_enabled: bool = True
+    snapshot_enabled: bool = True
+    offline_retrieval_enabled: bool = True
+    online_retrieval_enabled: bool = True
+    cache_max_entries: int = Field(ge=1, default=1000)
+
+
+class TrainingPipelineSettings(PlatformModel):
+    """Training pipeline configuration."""
+
+    scheduler_enabled: bool = True
+    queue_enabled: bool = True
+    validation_enabled: bool = True
+    lifecycle_enabled: bool = True
+    metrics_enabled: bool = True
+    versioning_enabled: bool = True
+    checkpoint_enabled: bool = True
+    artifact_store_enabled: bool = True
+    max_concurrent_jobs: int = Field(ge=1, default=10)
+    default_training_version: str = Field(min_length=1, default="1.0.0")
+
+
+class ModelRegistrySettings(PlatformModel):
+    """Model registry configuration."""
+
+    registry_enabled: bool = True
+    promotion_enabled: bool = True
+    approval_required: bool = True
+    immutable_versions: bool = True
+    lineage_enabled: bool = True
+    audit_enabled: bool = True
+    max_registered_models: int = Field(ge=1, default=100)
+    max_versions_per_model: int = Field(ge=1, default=50)
+
+
+class InferencePipelineSettings(PlatformModel):
+    """Inference pipeline configuration."""
+
+    inference_enabled: bool = True
+    batch_enabled: bool = True
+    online_enabled: bool = True
+    queue_size: int = Field(ge=1, default=1000)
+    max_concurrent_requests: int = Field(ge=1, default=10)
+    timeout_seconds: int = Field(ge=1, default=60)
+    metrics_enabled: bool = True
+    lifecycle_enabled: bool = True
+    validation_enabled: bool = True
+
+
+class MLRuntimeSettings(PlatformModel):
+    """ML runtime configuration."""
+
+    runtime_enabled: bool = True
+    executor_enabled: bool = True
+    max_sessions: int = Field(ge=1, default=100)
+    session_timeout: int = Field(ge=1, default=300)
+    validation_enabled: bool = True
+    metrics_enabled: bool = True
+    lifecycle_enabled: bool = True
+
+
+class MLEngineSettings(PlatformModel):
+    """ML engine plugin configuration."""
+
+    enabled_plugins: list[str] = Field(default_factory=list)
+    default_plugin: str = Field(min_length=1, default="stub-engine")
+    sandbox_mode: bool = True
+    auto_discovery: bool = True
+    health_check_interval: int = Field(ge=1, default=60)
+    allow_hot_reload: bool = False
+
+
+class FrameworkAdaptersSettings(PlatformModel):
+    """Framework adapter configuration."""
+
+    enabled: bool = True
+    default_engine_type: str = Field(min_length=1, default="stub")
+    default_adapter: str = Field(min_length=1, default="stub-framework-adapter")
+    adapter_priorities: dict[str, int] = Field(default_factory=lambda: {"stub": 100})
+    auto_discovery: bool = True
+    validation_enabled: bool = True
+    health_check_interval: int = Field(ge=1, default=60)
+    metrics_enabled: bool = True
+    lifecycle_enabled: bool = True
+    sandbox_mode: bool = True
+    warm_start: bool = True
+    preload_default_models: bool = True
+
+
+class ArtifactManagementSettings(PlatformModel):
+    """Artifact management configuration."""
+
+    enabled: bool = True
+    default_scheme: str = Field(min_length=1, default="local")
+    validation_enabled: bool = True
+    cache_enabled: bool = True
+    cache_max_entries: int = Field(ge=1, default=1000)
+    health_check_interval: int = Field(ge=1, default=60)
+    metrics_enabled: bool = True
+    lifecycle_enabled: bool = True
+    sandbox_mode: bool = True
+
+
+class StorageProvidersSettings(PlatformModel):
+    """Storage provider configuration."""
+
+    enabled: bool = True
+    default_provider: str = Field(min_length=1, default="local")
+    default_scheme: str = Field(min_length=1, default="local")
+    artifact_root: str = Field(min_length=1, default="./artifacts")
+    allow_symlinks: bool = False
+    follow_links: bool = False
+    compute_checksums: bool = True
+    cache_metadata: bool = True
+    validation_enabled: bool = True
+    health_check_interval: int = Field(ge=1, default=60)
+    metrics_enabled: bool = True
+    lifecycle_enabled: bool = True
+    sandbox_mode: bool = True
+
+
 class PluginSettings(PlatformModel):
     """Plugin framework configuration."""
 
@@ -307,6 +454,21 @@ class AppSettings(BaseSettings):
     connectors: ConnectorSettings = Field(default_factory=ConnectorSettings)
     paper_adapter: PaperAdapterSettings = Field(default_factory=PaperAdapterSettings)
     historical: HistoricalSettings = Field(default_factory=HistoricalSettings)
+    market_data: MarketDataSettings = Field(default_factory=MarketDataSettings)
+    feature_engineering: FeatureEngineeringSettings = Field(
+        default_factory=FeatureEngineeringSettings
+    )
+    feature_store: FeatureStoreSettings = Field(default_factory=FeatureStoreSettings)
+    training_pipeline: TrainingPipelineSettings = Field(default_factory=TrainingPipelineSettings)
+    model_registry: ModelRegistrySettings = Field(default_factory=ModelRegistrySettings)
+    inference_pipeline: InferencePipelineSettings = Field(default_factory=InferencePipelineSettings)
+    ml_runtime: MLRuntimeSettings = Field(default_factory=MLRuntimeSettings)
+    ml_engine: MLEngineSettings = Field(default_factory=MLEngineSettings)
+    framework_adapters: FrameworkAdaptersSettings = Field(default_factory=FrameworkAdaptersSettings)
+    artifact_management: ArtifactManagementSettings = Field(
+        default_factory=ArtifactManagementSettings
+    )
+    storage_providers: StorageProvidersSettings = Field(default_factory=StorageProvidersSettings)
     feature_flags: FeatureFlagSettings = Field(default_factory=FeatureFlagSettings)
     markets: tuple[MarketEntry, ...] = Field(default_factory=tuple)
 
@@ -320,6 +482,17 @@ class AppSettings(BaseSettings):
             load_yaml_config("connectors.yaml"),
             load_yaml_config("paper_adapter.yaml"),
             load_yaml_config("historical.yaml"),
+            load_yaml_config("market_data.yaml"),
+            load_yaml_config("feature_engineering.yaml"),
+            load_yaml_config("feature_store.yaml"),
+            load_yaml_config("training_pipeline.yaml"),
+            load_yaml_config("model_registry.yaml"),
+            load_yaml_config("inference_pipeline.yaml"),
+            load_yaml_config("ml_runtime.yaml"),
+            load_yaml_config("ml_engine.yaml"),
+            load_yaml_config("framework_adapters.yaml"),
+            load_yaml_config("artifact_management.yaml"),
+            load_yaml_config("storage_providers.yaml"),
             load_yaml_config("feature_flags.yaml"),
             load_yaml_config("markets.yaml"),
             load_yaml_config("logging.yaml"),
@@ -377,6 +550,16 @@ def _flatten_for_settings(data: dict[str, Any]) -> dict[str, Any]:
         "connectors",
         "paper_adapter",
         "historical",
+        "market_data",
+        "feature_engineering",
+        "feature_store",
+        "training_pipeline",
+        "model_registry",
+        "inference_pipeline",
+        "ml_runtime",
+        "ml_engine",
+        "framework_adapters",
+        "artifact_management",
         "feature_flags",
         "markets",
     }

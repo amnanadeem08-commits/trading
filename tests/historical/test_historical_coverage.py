@@ -97,9 +97,7 @@ def test_query_metadata_filter_value() -> None:
     dataset = make_sample_dataset()
     updated = dataset.model_copy(
         update={
-            "metadata": dataset.metadata.model_copy(
-                update={"attributes": {"owner": "platform"}}
-            )
+            "metadata": dataset.metadata.model_copy(update={"attributes": {"owner": "platform"}})
         }
     )
     repository.register_dataset(updated)

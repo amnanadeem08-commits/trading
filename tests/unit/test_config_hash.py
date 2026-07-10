@@ -32,7 +32,18 @@ def test_list_configuration_files_complete() -> None:
     assert "decision.yaml" in files
     assert "paper_adapter.yaml" in files
     assert "historical.yaml" in files
-    assert len(files) == 21
+    assert "market_data.yaml" in files
+    assert "feature_engineering.yaml" in files
+    assert "feature_store.yaml" in files
+    assert "training_pipeline.yaml" in files
+    assert "model_registry.yaml" in files
+    assert "inference_pipeline.yaml" in files
+    assert "ml_runtime.yaml" in files
+    assert "ml_engine.yaml" in files
+    assert "framework_adapters.yaml" in files
+    assert "artifact_management.yaml" in files
+    assert "storage_providers.yaml" in files
+    assert len(files) == 32
 
 
 @pytest.mark.unit
@@ -55,3 +66,14 @@ def test_load_merged_configuration_has_sections() -> None:
     assert "decision" in merged
     assert "paper_adapter" in merged
     assert "historical" in merged
+    assert "market_data" in merged
+    assert "feature_engineering" in merged
+    assert "feature_store" in merged
+    assert "training_pipeline" in merged
+    assert "model_registry" in merged
+    assert "inference_pipeline" in merged
+    assert "ml_runtime" in merged
+    assert "ml_engine" in merged
+    assert "framework_adapters" in merged
+    assert "artifact_management" in merged
+    assert "storage_providers" in merged

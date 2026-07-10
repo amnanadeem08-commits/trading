@@ -1,0 +1,15 @@
+# Storage provider configuration
+storage_providers:
+  enabled: true
+  default_provider: local
+  default_scheme: local
+  artifact_root: ./artifacts
+  allow_symlinks: false
+  follow_links: false
+  compute_checksums: true
+  cache_metadata: true
+  validation_enabled: true
+  health_check_interval: 60
+  metrics_enabled: true
+  lifecycle_enabled: true
+  sandbox_mode: true

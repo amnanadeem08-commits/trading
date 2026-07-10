@@ -1,0 +1,10 @@
+# Model registry configuration
+model_registry:
+  registry_enabled: true
+  promotion_enabled: true
+  approval_required: true
+  immutable_versions: true
+  lineage_enabled: true
+  audit_enabled: true
+  max_registered_models: 100
+  max_versions_per_model: 50

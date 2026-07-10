@@ -18,7 +18,20 @@ from connectors.adapters.paper.paper_settings import PaperSettings
 from connectors.simulation.simulation_engine import SimulationEngine
 from connectors.validation.paper_validator import PaperValidator
 from historical.replay.replay_engine import ReplayEngine
+from market_data.models.market_record import MarketRecord
+from market_data.stream.stream_buffer import StreamBuffer
 from models.common import utc_now
+
+
+def _payload_from_market_record(record: MarketRecord) -> dict[str, object]:
+    payload: dict[str, object] = dict(record.attributes)
+    payload["timestamp"] = record.timestamp.isoformat()
+    payload["record_id"] = record.record_id
+    payload["dataset_id"] = record.dataset_id
+    payload["symbol_id"] = record.symbol_id
+    payload["record_type"] = record.record_type.value
+    return payload
+
 
 PAPER_ADAPTER_ID = "paper-adapter"
 
@@ -33,11 +46,13 @@ class PaperExecutionAdapter(ExecutionAdapter):
         engine: SimulationEngine | None = None,
         validator: PaperValidator | None = None,
         replay_engine: ReplayEngine | None = None,
+        stream_buffer: StreamBuffer | None = None,
     ) -> None:
         self._settings = settings or PaperSettings()
         self._engine = engine or SimulationEngine(self._settings)
         self._validator = validator or PaperValidator(self._settings)
         self._replay_engine = replay_engine
+        self._stream_buffer = stream_buffer
         self._lock = RLock()
         self._state = PaperState.NEW
         self._records: dict[str, PaperExecutionRecord] = {}
@@ -96,7 +111,13 @@ class PaperExecutionAdapter(ExecutionAdapter):
                 )
 
         historical_record: dict[str, object] | None = None
-        if self._replay_engine is not None:
+        market_data_stream = False
+        if self._stream_buffer is not None:
+            stream_step = self._stream_buffer.next()
+            if stream_step is not None and stream_step.record is not None:
+                historical_record = _payload_from_market_record(stream_step.record)
+                market_data_stream = True
+        elif self._replay_engine is not None:
             replay_step = self._replay_engine.next()
             if replay_step is not None and replay_step.record is not None:
                 historical_record = dict(replay_step.record.payload)
@@ -126,6 +147,10 @@ class PaperExecutionAdapter(ExecutionAdapter):
                     update={"state": final_state, "updated_at": utc_now()}
                 )
 
+        output_metadata = dict(result.metadata)
+        if market_data_stream:
+            output_metadata["market_data_stream"] = "true"
+
         return {
             "simulated": True,
             "execution_id": result.execution_id,
@@ -135,7 +160,7 @@ class PaperExecutionAdapter(ExecutionAdapter):
             "duration_ms": result.duration_ms,
             "validation_passed": result.validation_passed,
             "synthetic_fill": dict(result.synthetic_fill),
-            "metadata": dict(result.metadata),
+            "metadata": output_metadata,
             "started_at": result.started_at.isoformat(),
             "completed_at": result.completed_at.isoformat(),
         }

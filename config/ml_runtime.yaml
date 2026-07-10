@@ -1,0 +1,9 @@
+# ML runtime configuration
+ml_runtime:
+  runtime_enabled: true
+  executor_enabled: true
+  max_sessions: 100
+  session_timeout: 300
+  validation_enabled: true
+  metrics_enabled: true
+  lifecycle_enabled: true
