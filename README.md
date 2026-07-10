@@ -1,4 +1,4 @@
-﻿# Trading Signal Dashboard
+# Trading Signal Dashboard
 
 Scans Pakistan Stock Exchange symbols and/or top Binance USDT crypto pairs,
 computes RSI + MACD + volatility, and asks an LLM to synthesize a cautious
