@@ -1,58 +1,51 @@
-# Trading Signal Dashboard
+﻿# Khaldun Trade
 
-Scans Pakistan Stock Exchange symbols and/or top Binance USDT crypto pairs,
-computes RSI + MACD + volatility, and asks an LLM to synthesize a cautious
-BUY/SELL/HOLD signal with confidence, reasoning, and invalidation.
+AI-powered trading intelligence platform for **cryptocurrency**, **PMEX**, and **PSX**.
 
-The app is signal-only. It does not place orders.
+Current product objective: **signal generation and paper trading**.  
+Broker automation stays **disabled** until explicitly approved.  
+This is **not** financial advice and does **not** claim guaranteed profits.
 
-## Setup
+## Start Here — TIOS
+
+The **Trading Intelligence Operating System (TIOS)** is the single source of truth for architecture, roadmap, sprints, validation, and documentation.
+
+1. [`development/00_MASTER/MASTER_ROADMAP.md`](development/00_MASTER/MASTER_ROADMAP.md)
+2. [`development/00_MASTER/PROJECT_STATUS.md`](development/00_MASTER/PROJECT_STATUS.md)
+3. [`development/07_CURSOR/WORKFLOW.md`](development/07_CURSOR/WORKFLOW.md)
+4. [`AGENTS.md`](AGENTS.md)
+
+Every coding task must begin by reading TIOS.
+
+## Platform Baseline
+
+| Milestone | Status |
+|-----------|--------|
+| Phase 0 contracts | Certified — `PHASE0_CERTIFICATION.md` |
+| Foundation v1.0.0 | Certified — `FOUNDATION_CERTIFICATION.md` |
+| Phase 2 ML execution | Complete in codebase |
+| TIOS | Bootstrap complete (Sprint-000) |
+
+Engineering archive: [`docs/`](docs/).
+
+## Development Commands
+
+```bash
+python scripts/dev.py lint
+python scripts/dev.py test
+python scripts/validate_architecture.py
+```
+
+Coverage fail-under: **88%**. Full gates: [`development/05_VALIDATION/GATES.md`](development/05_VALIDATION/GATES.md).
+
+## Legacy Signal Dashboard (Pre-Platform)
+
+The original CLI/dashboard entrypoints remain for reference:
 
 ```bash
 pip install -r requirements.txt
-```
-
-Create a `.env` file. You can use Anthropic, Gemini, or both:
-
-```env
-LLM_PROVIDER=auto
-
-# Option 1: Anthropic
-ANTHROPIC_API_KEY=your_anthropic_key_here
-ANTHROPIC_MODEL=claude-sonnet-4-6
-
-# Option 2: Gemini
-GEMINI_API_KEY=your_gemini_key_here
-GEMINI_MODEL=gemini-1.5-flash
-```
-
-`LLM_PROVIDER=auto` uses Anthropic first when `ANTHROPIC_API_KEY` is present,
-otherwise Gemini when `GEMINI_API_KEY` is present. You can force one provider
-with `LLM_PROVIDER=anthropic` or `LLM_PROVIDER=gemini`.
-
-## Run CLI
-
-```bash
 python main.py --market both
-python main.py --market psx
-python main.py --market crypto
-```
-
-CLI output is saved as a multi-sheet Excel workbook. In `both` mode, PSX and
-Crypto appear as separate sheets.
-
-## Run Web Dashboard
-
-```bash
 streamlit run dashboard.py
 ```
 
-Then open `http://127.0.0.1:8501`. Use **Refresh Results** to fetch live data,
-run the indicators, call the configured LLM provider, update charts, and save a
-new Excel workbook.
-
-## Safety
-
-This is analysis support, not financial advice. LLMs can be wrong confidently.
-Paper trade first, review reasoning, and use the invalidation field before
-acting on any signal.
+Configure LLM keys via `.env` (see `.env.example`). These paths are **legacy** relative to the platform packages and must not become the home of new business logic. Prefer TIOS-governed sprints for new work.

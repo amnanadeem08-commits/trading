@@ -8,12 +8,13 @@ for Karachi, e.g. HBL.KA, OGDC.KA, LUCK.KA.
 import pandas as pd
 import yfinance as yf
 
-from config import PSX_INTERVAL, PSX_PERIOD, PSX_SYMBOLS, TOP_N
+from core.signal_universe import configured_psx_symbols
+from legacy_config import PSX_INTERVAL, PSX_PERIOD
 
 
-def get_psx_symbols(n: int = TOP_N) -> list[str]:
-    """Return the configured PSX universe, capped to n symbols."""
-    return PSX_SYMBOLS[:n]
+def get_psx_symbols() -> list[str]:
+    """Return the full configured PSX universe from signal_universe.yaml."""
+    return configured_psx_symbols()
 
 
 def fetch_psx_ohlcv_df(

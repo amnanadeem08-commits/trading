@@ -1,0 +1,59 @@
+# Signal scan universe for legacy dashboard / main.py (signal-only).
+# Symbols are normalized at load time:
+#   crypto: BTCUSDT → BTC/USDT (ccxt)
+#   psx:    MARI    → MARI.KA (Yahoo Finance)
+#   pmex:   instrument ids (full supported list — not padded to 20)
+# Duplicates (including after normalization) are rejected.
+# Live PMEX/MT5 feed is deferred; OHLCV uses documented commodity proxies.
+
+signal_universe:
+  crypto_symbols:
+    - BTCUSDT
+    - ETHUSDT
+    - BNBUSDT
+    - SOLUSDT
+    - XRPUSDT
+    - ADAUSDT
+    - DOGEUSDT
+    - AVAXUSDT
+    - DOTUSDT
+    - LINKUSDT
+    - POLUSDT
+    - LTCUSDT
+    - ATOMUSDT
+    - UNIUSDT
+    - APTUSDT
+    - ARBUSDT
+    - NEARUSDT
+    - OPUSDT
+    - SUIUSDT
+    - TRXUSDT
+  psx_symbols:
+    - MARI
+    - OGDC
+    - PPL
+    - HUBC
+    - TRG
+    - HBL
+    - UBL
+    - MCB
+    - LUCK
+    - ENGRO
+    - FFC
+    - SYS
+    - PSO
+    - SNGP
+    - POL
+    - EFERT
+    - MLCF
+    - DGKC
+    - NBP
+    - BAFL
+  pmex_instruments:
+    - GOLD
+    - SILVER
+    - CRUDE_OIL
+    - BRENT
+    - NATURAL_GAS
+    - COPPER
+    - COTTON

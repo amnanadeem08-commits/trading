@@ -1,0 +1,36 @@
+---
+description: TIOS mandatory workflow — read SSOT before any coding task
+alwaysApply: true
+---
+
+# TIOS Workflow (Always Apply)
+
+This repository is governed by the **Trading Intelligence Operating System (TIOS)** under `development/`.
+
+## Before any implementation
+
+1. Read `development/00_MASTER/MASTER_ROADMAP.md`
+2. Read `development/00_MASTER/PROJECT_STATUS.md`
+3. Read `development/00_MASTER/NEXT_TASK.md`
+4. Read the **current sprint** under `development/02_PHASES/`
+5. Read `development/01_GLOBAL_RULES/RULEBOOK.md`
+6. Read `development/01_GLOBAL_RULES/ARCHITECTURE_RULES.md`
+
+If `NEXT_TASK.md` says Active coding task = **none**, do not start product features.
+
+## Hard constraints
+
+- Implement only the task listed in `NEXT_TASK.md`
+- Never break architecture or reverse imports (`pyproject.toml` import-linter)
+- Never remove tests or reduce coverage below 88%
+- Never skip validation gates in `development/05_VALIDATION/GATES.md`
+- Always run `python scripts/validate_tios.py` and `python scripts/sync_tios_status.py` before stopping
+- Never modify historical sprint reports or certification files
+- Never enable broker automation unless TIOS release docs explicitly approve it
+- Never claim guaranteed profits or financial advice
+- Keep TIOS docs synchronized after each completed task, then stop
+
+## Entry
+
+Full workflow: `development/07_CURSOR/WORKFLOW.md`  
+E2E checklist: `development/07_CURSOR/E2E_WORKFLOW_TEST.md`

@@ -1,0 +1,5 @@
+# Signal engine configuration
+signal_engine:
+  registry_enabled: true
+  max_signals: 10000
+  assembly_enabled: true

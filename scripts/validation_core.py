@@ -105,12 +105,15 @@ SCAN_EXCLUDE_PREFIXES: tuple[str, ...] = (
     "core/indicators.py",
     "core/sentiment.py",
     "core/llm_analyzer.py",
+    "core/signal_universe.py",
     "connectors/binance_connector.py",
     "connectors/psx_connector.py",
+    "connectors/pmex_connector.py",
     "main.py",
     "dashboard.py",
-    "config.py",
+    "legacy_config.py",
     "tests/test_llm_analyzer.py",
+    "tests/test_signal_universe.py",
 )
 
 

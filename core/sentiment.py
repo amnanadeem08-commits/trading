@@ -7,7 +7,7 @@ FOMO/panic works: it's a herd phenomenon, not a per-asset one.
 """
 
 import requests
-from config import FEAR_GREED_API
+from legacy_config import FEAR_GREED_API
 
 
 def fetch_fear_greed() -> dict:

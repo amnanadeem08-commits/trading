@@ -1,0 +1,9 @@
+# Paper trading configuration (V1.2 — simulated path only)
+paper_trading:
+  registry_enabled: true
+  max_sessions: 10000
+  orchestration_enabled: true
+  # Live brokers remain gated; paper path must refuse when live_trading_enabled is true.
+  refuse_when_live_trading_enabled: true
+  # PAPER-003: simulated fill must not proceed without an explicit risk gate.
+  risk_gate_required_before_fill: true

@@ -29,7 +29,9 @@ class PipelineLayer(IntEnum):
     AGENTS = 17
     DECISION = 18
     RISK = 19
-    EXECUTION = 20
+    SIGNAL_ENGINE = 20
+    EXECUTION = 21
+    PAPER_TRADING = 22
 
 
 PIPELINE_LAYER_ORDER: tuple[PipelineLayer, ...] = tuple(PipelineLayer)
@@ -55,7 +57,9 @@ PIPELINE_PACKAGES: dict[str, PipelineLayer] = {
     "agents": PipelineLayer.AGENTS,
     "decision": PipelineLayer.DECISION,
     "risk": PipelineLayer.RISK,
+    "signal_engine": PipelineLayer.SIGNAL_ENGINE,
     "execution": PipelineLayer.EXECUTION,
+    "paper_trading": PipelineLayer.PAPER_TRADING,
 }
 
 # import-linter layers contract uses highest-first ordering.
@@ -102,19 +106,23 @@ RESEARCH_PACKAGE = "research"
 LEGACY_PATH_PREFIXES: tuple[str, ...] = (
     "main.py",
     "dashboard.py",
-    "config.py",
+    "legacy_config.py",
     "core/indicators.py",
     "core/sentiment.py",
     "core/llm_analyzer.py",
+    "core/signal_universe.py",
     "connectors/binance_connector.py",
     "connectors/psx_connector.py",
+    "connectors/pmex_connector.py",
     "tests/test_llm_analyzer.py",
+    "tests/test_signal_universe.py",
 )
 
 LEGACY_CONNECTOR_FILES: frozenset[str] = frozenset(
     {
         "connectors/binance_connector.py",
         "connectors/psx_connector.py",
+        "connectors/pmex_connector.py",
     }
 )
 
@@ -127,6 +135,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ml",
             "ai",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -138,6 +147,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ml",
             "ai",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -150,6 +160,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ai",
             "llm",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -173,6 +184,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -196,6 +208,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -216,7 +229,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ai",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -240,7 +255,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -263,7 +280,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -285,7 +304,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -306,7 +327,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -326,7 +349,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -345,7 +370,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -363,7 +390,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -380,7 +409,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -396,7 +427,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "llm",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -407,7 +440,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
         {
             "decision",
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -417,7 +452,9 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     "decision": frozenset(
         {
             "risk",
+            "signal_engine",
             "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -426,7 +463,19 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     ),
     "risk": frozenset(
         {
+            "signal_engine",
             "execution",
+            "paper_trading",
+            "connectors",
+            "api",
+            "dashboard",
+            "research",
+        }
+    ),
+    "signal_engine": frozenset(
+        {
+            "execution",
+            "paper_trading",
             "connectors",
             "api",
             "dashboard",
@@ -435,7 +484,15 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
     ),
     "execution": frozenset(
         {
+            "paper_trading",
             "connectors",
+            "api",
+            "dashboard",
+            "research",
+        }
+    ),
+    "paper_trading": frozenset(
+        {
             "api",
             "dashboard",
             "research",
@@ -460,6 +517,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ai",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -487,6 +545,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ai",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -513,6 +572,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "ai",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
             "api",
             "dashboard",
@@ -542,6 +602,7 @@ FORBIDDEN_IMPORT_PAIRS: dict[str, frozenset[str]] = {
             "agents",
             "decision",
             "risk",
+            "signal_engine",
             "execution",
         }
     ),

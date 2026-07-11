@@ -31,7 +31,9 @@ def test_pipeline_layer_order_is_frozen() -> None:
         "AGENTS",
         "DECISION",
         "RISK",
+        "SIGNAL_ENGINE",
         "EXECUTION",
+        "PAPER_TRADING",
     ]
     assert PIPELINE_PACKAGES["feature_store"] == PipelineLayer.FEATURE_STORE
     assert PIPELINE_PACKAGES["training_pipeline"] == PipelineLayer.TRAINING_PIPELINE
@@ -43,6 +45,8 @@ def test_pipeline_layer_order_is_frozen() -> None:
     assert PIPELINE_PACKAGES["artifact_management"] == PipelineLayer.ARTIFACT_MANAGEMENT
     assert PIPELINE_PACKAGES["storage_providers"] == PipelineLayer.STORAGE_PROVIDERS
     assert PIPELINE_PACKAGES["ml"] == PipelineLayer.ML
+    assert PIPELINE_PACKAGES["signal_engine"] == PipelineLayer.SIGNAL_ENGINE
+    assert PIPELINE_PACKAGES["paper_trading"] == PipelineLayer.PAPER_TRADING
 
 
 @pytest.mark.architecture

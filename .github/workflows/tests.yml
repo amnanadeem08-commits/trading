@@ -15,4 +15,4 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install -e ".[dev]"
-      - run: python -m pytest tests/unit tests/ml tests/ai tests/decision tests/risk tests/execution tests/connectors tests/paper tests/historical tests/market_data tests/feature_engineering tests/feature_store tests/training_pipeline tests/model_registry tests/inference_pipeline tests/ml_runtime tests/ml_engine_plugins tests/framework_adapters tests/artifact_management tests/storage_providers tests/contract tests/architecture tests/integration -v
+      - run: python -m pytest tests/unit tests/ml tests/ai tests/decision tests/risk tests/signal_engine tests/paper_trading tests/execution tests/connectors tests/paper tests/historical tests/market_data tests/feature_engineering tests/feature_store tests/training_pipeline tests/model_registry tests/inference_pipeline tests/ml_runtime tests/ml_engine_plugins tests/framework_adapters tests/artifact_management tests/storage_providers tests/contract tests/architecture tests/integration -v

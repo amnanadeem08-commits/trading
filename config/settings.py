@@ -33,6 +33,24 @@ class RiskSettings(PlatformModel):
     versioning_enabled: bool = True
 
 
+class SignalEngineSettings(PlatformModel):
+    """Signal engine configuration."""
+
+    registry_enabled: bool = True
+    max_signals: int = Field(ge=1, default=10_000)
+    assembly_enabled: bool = True
+
+
+class PaperTradingSettings(PlatformModel):
+    """Paper trading configuration (simulated path only)."""
+
+    registry_enabled: bool = True
+    max_sessions: int = Field(ge=1, default=10_000)
+    orchestration_enabled: bool = True
+    refuse_when_live_trading_enabled: bool = True
+    risk_gate_required_before_fill: bool = True
+
+
 class FeatureFlagSettings(PlatformModel):
     """Runtime feature flags per Rule R17."""
 
@@ -450,6 +468,8 @@ class AppSettings(BaseSettings):
     redis: RedisSettings = Field(default_factory=RedisSettings)
     indicators: IndicatorSettings = Field(default_factory=IndicatorSettings)
     risk: RiskSettings = Field(default_factory=RiskSettings)
+    signal_engine: SignalEngineSettings = Field(default_factory=SignalEngineSettings)
+    paper_trading: PaperTradingSettings = Field(default_factory=PaperTradingSettings)
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     connectors: ConnectorSettings = Field(default_factory=ConnectorSettings)
     paper_adapter: PaperAdapterSettings = Field(default_factory=PaperAdapterSettings)
@@ -478,6 +498,8 @@ class AppSettings(BaseSettings):
         yaml_data = merge_configs(
             load_yaml_config("indicators.yaml"),
             load_yaml_config("risk.yaml"),
+            load_yaml_config("signal_engine.yaml"),
+            load_yaml_config("paper_trading.yaml"),
             load_yaml_config("execution.yaml"),
             load_yaml_config("connectors.yaml"),
             load_yaml_config("paper_adapter.yaml"),
@@ -546,6 +568,8 @@ def _flatten_for_settings(data: dict[str, Any]) -> dict[str, Any]:
         "redis",
         "indicators",
         "risk",
+        "signal_engine",
+        "paper_trading",
         "execution",
         "connectors",
         "paper_adapter",
@@ -560,6 +584,7 @@ def _flatten_for_settings(data: dict[str, Any]) -> dict[str, Any]:
         "ml_engine",
         "framework_adapters",
         "artifact_management",
+        "storage_providers",
         "feature_flags",
         "markets",
     }

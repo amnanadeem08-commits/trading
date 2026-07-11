@@ -13,15 +13,24 @@ Optional:
 import json
 import os
 import re
+from pathlib import Path
 
 import requests
 from anthropic import Anthropic
-from openai import OpenAI
 from dotenv import load_dotenv
+from openai import OpenAI
 
-from config import GEMINI_MODEL, LLM_MODEL, LLM_PROVIDER, MAX_TOKENS, OPENROUTER_MODEL
+# Always load repo-root .env (Streamlit cwd can differ). utf-8-sig strips BOM so
+# the first key (e.g. LLM_PROVIDER) is not silently renamed to \ufeffLLM_PROVIDER.
+_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(_ENV_PATH, encoding="utf-8-sig")
 
-load_dotenv()
+# Legacy dashboard defaults (env overrides). Do not import the platform `config` package.
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "auto")
+LLM_MODEL = os.getenv("ANTHROPIC_MODEL") or os.getenv("LLM_MODEL", "claude-sonnet-4-6")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-oss-20b:free")
+MAX_TOKENS = int(os.getenv("MAX_TOKENS", "1024"))
 
 
 class AIConfigurationError(RuntimeError):
@@ -288,13 +297,15 @@ def openrouter_payload(user_prompt: str, max_tokens: int | None = None) -> dict:
 
 def parse_json_response(text: str) -> dict:
     cleaned = text.replace("```json", "").replace("```", "").strip()
+    # Free models sometimes embed raw control characters inside JSON strings.
+    cleaned = "".join(ch for ch in cleaned if ord(ch) >= 32 or ch in "\t\n\r")
     try:
-        result = json.loads(cleaned)
+        result = json.loads(cleaned, strict=False)
     except json.JSONDecodeError:
         match = re.search(r"\{.*\}", cleaned, flags=re.DOTALL)
         if not match:
             raise
-        result = json.loads(match.group(0))
+        result = json.loads(match.group(0), strict=False)
     validate_signal_result(result)
     return result
 
@@ -376,7 +387,13 @@ def assert_ai_ready(verify_remote: bool = True) -> None:
 
 
 def analyze_with_anthropic(user_prompt: str, max_tokens: int | None = None) -> dict:
-    client = Anthropic(api_key=_env("ANTHROPIC_API_KEY"))
+    api_key = _env("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise AIConfigurationError(
+            f"Anthropic API key is empty. Set ANTHROPIC_API_KEY in {_ENV_PATH} "
+            "(empty string makes the Anthropic SDK raise: Could not resolve authentication method)."
+        )
+    client = Anthropic(api_key=api_key)
     response = client.messages.create(
         model=model_for_provider("anthropic"),
         max_tokens=max_tokens or MAX_TOKENS,

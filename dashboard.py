@@ -1,5 +1,5 @@
 ﻿"""
-Interactive web dashboard for PSX + Crypto signal results.
+Interactive web dashboard for Crypto + PSX + PMEX signal results.
 
 Run:
     streamlit run dashboard.py
@@ -14,9 +14,29 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from core.llm_analyzer import AIAuthenticationError, AIConfigurationError, AIExecutionError, assert_ai_ready, provider_status, startup_diagnostics
+from core.llm_analyzer import (
+    AIAuthenticationError,
+    AIConfigurationError,
+    AIExecutionError,
+    assert_ai_ready,
+    startup_diagnostics,
+)
+from core.signal_universe import (
+    configured_crypto_symbols,
+    configured_pmex_instruments,
+    configured_psx_symbols,
+    configured_universe_counts,
+)
+from core.signal_workbook import (
+    PRODUCTION_DIR,
+    PRODUCTION_GENERATOR,
+    ensure_artifact_dirs,
+    has_blocked_name_prefix,
+    is_production_workbook,
+    list_production_workbooks,
+    read_workbook_metadata,
+)
 from main import MARKET_SHEETS, markets_to_run, save_results, scan_market
-
 
 SIGNAL_COLORS = {
     "BUY": "#1f9d66",
@@ -146,8 +166,123 @@ st.markdown(
 )
 
 
+# Production workbooks ONLY under outputs/production/. Never root, archive, or proof.
+_WORKBOOK_DIR = PRODUCTION_DIR
+
+_AUTH_HOLD_FALLBACK_MARKERS = (
+    "Analysis failed, defaulting to HOLD for safety",
+    "Could not resolve authentication method",
+)
+_PROOF_REASONING_PREFIX = "Proof scan for"
+
+
+def frame_has_proof_reasoning(df: pd.DataFrame) -> bool:
+    if df is None or df.empty or "reasoning" not in df.columns:
+        return False
+    return bool(df["reasoning"].astype(str).str.startswith(_PROOF_REASONING_PREFIX).any())
+
+
+def results_have_proof_reasoning(results: dict) -> bool:
+    return any(frame_has_proof_reasoning(df) for df in results.values())
+
+
+def workbook_has_proof_reasoning(path: Path) -> bool:
+    try:
+        sheets = pd.read_excel(path, sheet_name=None)
+    except Exception:
+        return False
+    return any(
+        frame_has_proof_reasoning(df)
+        for name, df in sheets.items()
+        if name != "_Meta"
+    )
+
+
+def frame_has_auth_hold_fallback(df: pd.DataFrame) -> bool:
+    if df is None or df.empty or "reasoning" not in df.columns:
+        return False
+    reasoning = df["reasoning"].astype(str)
+    return bool(
+        reasoning.str.contains("|".join(_AUTH_HOLD_FALLBACK_MARKERS), regex=True, na=False).any()
+    )
+
+
+def results_have_auth_hold_fallback(results: dict) -> bool:
+    return any(frame_has_auth_hold_fallback(df) for df in results.values())
+
+
+def workbook_has_auth_hold_fallback(path: Path) -> bool:
+    """True when workbook rows were produced by the removed auth→HOLD catch path."""
+    try:
+        sheets = pd.read_excel(path, sheet_name=None)
+    except Exception:
+        return False
+    return any(
+        frame_has_auth_hold_fallback(df)
+        for name, df in sheets.items()
+        if name != "_Meta"
+    )
+
+
+def workbook_matches_configured_universe(path: Path) -> bool:
+    """False when a sheet has fewer rows than the current configured universe.
+
+    Stale workbooks from older 5-symbol configs must not be treated as current.
+    """
+    try:
+        sheets = pd.read_excel(path, sheet_name=None)
+    except Exception:
+        return False
+
+    expected = {
+        "Crypto": len(configured_crypto_symbols()),
+        "PSX": len(configured_psx_symbols()),
+        "PMEX": len(configured_pmex_instruments()),
+    }
+    for sheet_name, configured_count in expected.items():
+        if sheet_name not in sheets:
+            continue
+        df = sheets[sheet_name]
+        if df is None or df.empty:
+            return False
+        # Ignore placeholder n/a rows from empty scans
+        if "symbol" in df.columns:
+            symbols = df["symbol"].astype(str)
+            real = symbols[~symbols.str.lower().isin({"n/a", "nan", ""})]
+            # Reject stale TOP_N=5 workbooks; allow minor live fetch skips.
+            if len(real) < configured_count and len(real) <= 5:
+                return False
+        elif len(df) < configured_count and len(df) <= 5:
+            return False
+    return True
+
+
+def _is_loadable_workbook(path: Path) -> bool:
+    """Only production_scan workbooks under outputs/production/ are eligible."""
+    if has_blocked_name_prefix(path):
+        return False
+    if not is_production_workbook(path):
+        return False
+    if workbook_has_auth_hold_fallback(path):
+        return False
+    if workbook_has_proof_reasoning(path):
+        return False
+    return workbook_matches_configured_universe(path)
+
+
+def list_root_signal_workbooks() -> list[Path]:
+    """Eligible production workbooks under outputs/production/ only."""
+    ensure_artifact_dirs()
+    return sorted(
+        (p for p in list_production_workbooks() if _is_loadable_workbook(p)),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+
 def latest_workbook() -> Path | None:
-    files = sorted(Path(".").glob("signals_*.xlsx"), key=lambda p: p.stat().st_mtime, reverse=True)
+    """Newest production workbook under outputs/production/ (never proof/root/archive)."""
+    files = list_root_signal_workbooks()
     return files[0] if files else None
 
 
@@ -166,7 +301,12 @@ def run_refresh(selected_market: str) -> tuple[dict[str, pd.DataFrame], str]:
     for market in markets_to_run(selected_market):
         with st.status(f"Refreshing {MARKET_SHEETS[market]} data...", expanded=False):
             results[market] = scan_market(market)
-    out_path = save_results(results, selected_market)
+    out_path = save_results(
+        results,
+        selected_market,
+        generator=PRODUCTION_GENERATOR,
+        source="dashboard.py",
+    )
     return results, out_path
 
 
@@ -176,22 +316,39 @@ def signal_counts(df: pd.DataFrame) -> pd.Series:
     return df["signal"].fillna("n/a").value_counts()
 
 
-def render_metric_cards(df: pd.DataFrame):
+def render_metric_cards(df: pd.DataFrame, *, market: str | None = None):
     counts = signal_counts(df)
-    total = int(counts.sum()) if not counts.empty else 0
+    scanned = int(counts.sum()) if not counts.empty else 0
     buy = int(counts.get("BUY", 0))
     sell = int(counts.get("SELL", 0))
     hold = int(counts.get("HOLD", 0))
-    high_conf = int((df.get("confidence", pd.Series(dtype=str)).fillna("").str.lower() == "high").sum()) if not df.empty else 0
+    high_conf = (
+        int((df.get("confidence", pd.Series(dtype=str)).fillna("").str.lower() == "high").sum())
+        if not df.empty
+        else 0
+    )
+
+    if market == "crypto":
+        monitored = len(configured_crypto_symbols())
+    elif market == "psx":
+        monitored = len(configured_psx_symbols())
+    elif market == "pmex":
+        monitored = len(configured_pmex_instruments())
+    else:
+        monitored = scanned
 
     cards = [
-        ("Assets", total, "scanned successfully"),
+        (
+            "Assets",
+            monitored,
+            f"{scanned} scanned of {monitored} configured in signal_universe.yaml",
+        ),
         ("BUY", buy, "opportunity signals"),
         ("SELL", sell, "risk-off signals"),
         ("HOLD", hold, f"{high_conf} high confidence"),
     ]
     columns = st.columns(4)
-    for column, (label, value, help_text) in zip(columns, cards):
+    for column, (label, value, help_text) in zip(columns, cards, strict=True):
         with column:
             st.metric(label=label, value=value, help=help_text)
 
@@ -203,7 +360,9 @@ def render_charts(df: pd.DataFrame, sheet_name: str):
         st.info(f"No {sheet_name} rows to chart yet.")
         return
 
-    color_map = {row["signal"]: SIGNAL_COLORS.get(row["signal"], "#6b7280") for _, row in counts.iterrows()}
+    color_map = {
+        row["signal"]: SIGNAL_COLORS.get(row["signal"], "#6b7280") for _, row in counts.iterrows()
+    }
     with left:
         fig = px.pie(
             counts,
@@ -224,7 +383,13 @@ def render_charts(df: pd.DataFrame, sheet_name: str):
         st.plotly_chart(fig, use_container_width=True)
 
     with right:
-        conf = df.get("confidence", pd.Series(dtype=str)).fillna("n/a").value_counts().rename_axis("confidence").reset_index(name="count")
+        conf = (
+            df.get("confidence", pd.Series(dtype=str))
+            .fillna("n/a")
+            .value_counts()
+            .rename_axis("confidence")
+            .reset_index(name="count")
+        )
         fig = px.bar(
             conf,
             x="confidence",
@@ -255,14 +420,14 @@ def render_asset_cards(df: pd.DataFrame):
     display_df["_order"] = display_df["signal"].map(sort_order).fillna(3)
     display_df = display_df.sort_values(["_order", "symbol"]).drop(columns=["_order"])
 
-    for _, row in display_df.head(12).iterrows():
+    for _, row in display_df.iterrows():
         signal = str(row.get("signal", "n/a"))
         color = SIGNAL_COLORS.get(signal, "#6b7280")
         reasoning = str(row.get("reasoning", "No reasoning available."))
         confidence = str(row.get("confidence", "n/a"))
         invalidation = str(row.get("invalidation", "n/a"))
         st.markdown(
-            f'''
+            f"""
             <div class="asset-card">
                 <div class="asset-top">
                     <div>
@@ -274,13 +439,13 @@ def render_asset_cards(df: pd.DataFrame):
                 <div class="reasoning">{reasoning}</div>
                 <div class="muted" style="margin-top:8px">Invalidation: {invalidation}</div>
             </div>
-            ''',
+            """,
             unsafe_allow_html=True,
         )
 
 
-def render_market(sheet_name: str, df: pd.DataFrame):
-    render_metric_cards(df)
+def render_market(sheet_name: str, df: pd.DataFrame, *, market: str):
+    render_metric_cards(df, market=market)
     render_charts(df, sheet_name)
     st.markdown("#### Signal Details")
     render_asset_cards(df)
@@ -292,7 +457,7 @@ st.markdown(
     """
     <div class="main-title">
         <h1>Trading Signal Dashboard</h1>
-        <p>PSX and crypto signals in one refreshable visual workspace.</p>
+        <p>Crypto, PSX, and PMEX signals in one refreshable visual workspace.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -307,19 +472,34 @@ with st.sidebar:
     st.caption(f"Model: {diagnostics['model']}")
     st.caption(f"API key configured: {diagnostics['api_key_configured']}")
     st.caption(f"Auth method: {diagnostics['authentication_method']}")
+    universe = configured_universe_counts()
+    st.caption(
+        f"Monitored universe: {universe['crypto']} crypto · "
+        f"{universe['psx']} PSX · {universe['pmex']} PMEX · "
+        f"{universe['total']} total (config/signal_universe.yaml)"
+    )
     selected_market = st.segmented_control(
         "Market",
-        options=["both", "psx", "crypto"],
-        default="both",
-        format_func=lambda value: {"both": "Both", "psx": "PSX", "crypto": "Crypto"}[value],
+        options=["all", "both", "crypto", "psx", "pmex"],
+        default="all",
+        format_func=lambda value: {
+            "all": "All Markets",
+            "both": "Both",
+            "crypto": "Crypto",
+            "psx": "PSX",
+            "pmex": "PMEX",
+        }[value],
     )
-    st.caption("Refresh fetches live data, runs indicators, saves a new Excel workbook, and updates charts.")
+    st.caption(
+        "Refresh fetches live data, runs indicators, saves a new Excel workbook, "
+        "and updates charts."
+    )
     refresh = st.button("Refresh Results", type="primary", use_container_width=True)
 
     st.divider()
     workbook_path = st.session_state.get("workbook_path")
     if workbook_path and Path(workbook_path).exists():
-        with open(workbook_path, "rb") as file:
+        with Path(workbook_path).open("rb") as file:
             st.download_button(
                 "Download Excel",
                 file,
@@ -328,12 +508,30 @@ with st.sidebar:
                 use_container_width=True,
             )
 
+if "results" in st.session_state and (
+    results_have_auth_hold_fallback(st.session_state.results)
+    or results_have_proof_reasoning(st.session_state.results)
+):
+    st.session_state.results = {}
+    st.session_state.workbook_path = None
+    st.session_state.last_updated = None
+    st.warning(
+        "Cleared in-memory results that were not from a production scan "
+        "(proof/auth-fallback rows). Click **Refresh Results** to run a live production scan."
+    )
+
 if "results" not in st.session_state:
     latest = latest_workbook()
     if latest:
-        st.session_state.results = load_workbook(latest)
-        st.session_state.workbook_path = str(latest)
-        st.session_state.last_updated = datetime.fromtimestamp(latest.stat().st_mtime)
+        meta = read_workbook_metadata(latest)
+        if meta.get("generator") != PRODUCTION_GENERATOR:
+            st.session_state.results = {}
+            st.session_state.workbook_path = None
+            st.session_state.last_updated = None
+        else:
+            st.session_state.results = load_workbook(latest)
+            st.session_state.workbook_path = str(latest)
+            st.session_state.last_updated = datetime.fromtimestamp(latest.stat().st_mtime)
     else:
         st.session_state.results = {}
         st.session_state.workbook_path = None
@@ -351,21 +549,25 @@ if refresh:
         st.stop()
 
 last_updated = st.session_state.get("last_updated")
-if last_updated:
-    st.caption(f"Last updated: {last_updated.strftime('%Y-%m-%d %H:%M:%S')} | Workbook: {st.session_state.get('workbook_path')}")
+workbook_path_display = st.session_state.get("workbook_path")
+if last_updated and workbook_path_display:
+    meta = read_workbook_metadata(Path(workbook_path_display)) if Path(str(workbook_path_display)).exists() else {}
+    generator = meta.get("generator", "unknown")
+    st.caption(
+        f"Last updated: {last_updated.strftime('%Y-%m-%d %H:%M:%S')} | "
+        f"Workbook: {workbook_path_display} | generator={generator}"
+    )
 else:
-    st.info("No workbook found yet. Click Refresh Results to generate the first dashboard data.")
+    st.info("No production scan available")
 
 results = st.session_state.get("results", {})
-available_tabs = [(market, MARKET_SHEETS[market]) for market in ["psx", "crypto"] if market in results]
+available_tabs = [
+    (market, MARKET_SHEETS[market]) for market in ["psx", "crypto", "pmex"] if market in results
+]
 if not available_tabs:
     st.stop()
-
-tabs = st.tabs([sheet for _, sheet in available_tabs])
-for tab, (market, sheet_name) in zip(tabs, available_tabs):
-    with tab:
-        render_market(sheet_name, results.get(market, pd.DataFrame()))
-
-
-
-
+else:
+    tabs = st.tabs([sheet for _, sheet in available_tabs])
+    for tab, (market, sheet_name) in zip(tabs, available_tabs, strict=True):
+        with tab:
+            render_market(sheet_name, results.get(market, pd.DataFrame()), market=market)

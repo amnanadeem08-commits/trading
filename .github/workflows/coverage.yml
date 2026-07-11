@@ -16,10 +16,10 @@ jobs:
           python-version: "3.14"
       - run: pip install -e ".[dev]"
       - run: |
-          python -m pytest tests/unit tests/ml tests/ai tests/decision tests/risk tests/execution tests/connectors tests/paper tests/historical tests/market_data tests/feature_engineering tests/feature_store tests/training_pipeline tests/model_registry tests/inference_pipeline tests/ml_runtime tests/ml_engine_plugins tests/framework_adapters tests/artifact_management tests/storage_providers tests/contract tests/architecture tests/integration -q \
+          python -m pytest tests/unit tests/ml tests/ai tests/decision tests/risk tests/signal_engine tests/paper_trading tests/execution tests/connectors tests/paper tests/historical tests/market_data tests/feature_engineering tests/feature_store tests/training_pipeline tests/model_registry tests/inference_pipeline tests/ml_runtime tests/ml_engine_plugins tests/framework_adapters tests/artifact_management tests/storage_providers tests/contract tests/architecture tests/integration -q \
             --cov-fail-under=88 \
             --cov=models --cov=config --cov=historical --cov=market_data --cov=feature_engineering --cov=feature_store --cov=training_pipeline --cov=model_registry --cov=inference_pipeline --cov=ml_runtime --cov=ml_engine_plugins --cov=framework_adapters --cov=artifact_management --cov=storage_providers --cov=connectors --cov=events \
             --cov=versioning --cov=audit --cov=feature_flags --cov=research \
             --cov=architecture --cov=health --cov=metrics --cov=platform_logging \
-            --cov=security --cov=notifications --cov=monitoring --cov=services --cov=pipeline --cov=workflow --cov=data --cov=core --cov=ml --cov=ai --cov=decision --cov=risk --cov=execution --cov=plugins \
+            --cov=security --cov=notifications --cov=monitoring --cov=services --cov=pipeline --cov=workflow --cov=data --cov=core --cov=ml --cov=ai --cov=decision --cov=risk --cov=signal_engine --cov=paper_trading --cov=execution --cov=plugins \
             --cov-report=term-missing

@@ -14,6 +14,7 @@ _CONFIG_FILES: tuple[str, ...] = (
     "execution.yaml",
     "connectors.yaml",
     "paper_adapter.yaml",
+    "paper_trading.yaml",
     "historical.yaml",
     "market_data.yaml",
     "feature_engineering.yaml",
