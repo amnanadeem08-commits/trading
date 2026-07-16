@@ -3,13 +3,30 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, field_validator
+import yaml
+from dotenv import load_dotenv
+from pydantic import AliasChoices, Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from config.loader import load_yaml_config, merge_configs
 from models.common import ConfigurationError, PlatformModel
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_ENV_PATH = _PROJECT_ROOT / ".env"
+_ENV_TXT_PATH = _PROJECT_ROOT / ".env.txt"
+
+
+def load_project_env() -> None:
+    """Load repo-root environment files before settings or gateway construction."""
+    load_dotenv(_ENV_PATH, encoding="utf-8-sig")
+    if _ENV_TXT_PATH.is_file():
+        load_dotenv(_ENV_TXT_PATH, encoding="utf-8-sig", override=False)
+
+
+load_project_env()
 
 
 class IndicatorSettings(PlatformModel):
@@ -55,6 +72,43 @@ class PaperTradingSettings(PlatformModel):
     fill_fraction: float = Field(gt=0.0, le=1.0, default=1.0)
     initial_cash: float = Field(gt=0.0, default=100_000.0)
     default_quantity: float = Field(gt=0.0, default=1.0)
+
+
+class PortfolioSyncSettings(PlatformModel):
+    """Read-only Binance Spot portfolio synchronization settings."""
+
+    portfolio_sync_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("portfolio_sync_enabled", "enabled"),
+    )
+    minimum_holding_usdt: float = Field(ge=0.0, default=1.0)
+    quote_asset: str = Field(min_length=1, default="USDT")
+    api_timeout_seconds: float = Field(gt=0.0, default=10.0)
+    sync_timeout_seconds: float = Field(gt=0.0, default=30.0)
+    cache_ttl_seconds: float = Field(gt=0.0, default=300.0)
+    max_retries: int = Field(ge=0, le=3, default=1)
+    asset_analysis_mapping: dict[str, str] = Field(default_factory=lambda: {"BNSOL": "SOL/USDT"})
+
+    @property
+    def enabled(self) -> bool:
+        """Compatibility accessor for existing portfolio orchestration."""
+        return self.portfolio_sync_enabled
+
+    @property
+    def timeout_milliseconds(self) -> int:
+        """Return the connector timeout in the unit required by ccxt."""
+        return int(self.api_timeout_seconds * 1_000)
+
+
+def _load_portfolio_sync_config() -> dict[str, Any]:
+    """Load optional portfolio settings, falling back to safe typed defaults."""
+    try:
+        payload = load_yaml_config("portfolio_sync.yaml")
+        raw_settings = payload.get("portfolio_sync", {})
+        validated = PortfolioSyncSettings.model_validate(raw_settings)
+    except ConfigurationError, OSError, TypeError, ValidationError, yaml.YAMLError:
+        return {}
+    return {"portfolio_sync": validated.model_dump(mode="python")}
 
 
 class FeatureFlagSettings(PlatformModel):
@@ -446,8 +500,8 @@ class AppSettings(BaseSettings):
     """Root application settings. Environment variables override YAML."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
+        env_file=str(_ENV_PATH),
+        env_file_encoding="utf-8-sig",
         env_nested_delimiter="__",
         extra="ignore",
     )
@@ -476,6 +530,7 @@ class AppSettings(BaseSettings):
     risk: RiskSettings = Field(default_factory=RiskSettings)
     signal_engine: SignalEngineSettings = Field(default_factory=SignalEngineSettings)
     paper_trading: PaperTradingSettings = Field(default_factory=PaperTradingSettings)
+    portfolio_sync: PortfolioSyncSettings = Field(default_factory=PortfolioSyncSettings)
     execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     connectors: ConnectorSettings = Field(default_factory=ConnectorSettings)
     paper_adapter: PaperAdapterSettings = Field(default_factory=PaperAdapterSettings)
@@ -506,6 +561,7 @@ class AppSettings(BaseSettings):
             load_yaml_config("risk.yaml"),
             load_yaml_config("signal_engine.yaml"),
             load_yaml_config("paper_trading.yaml"),
+            _load_portfolio_sync_config(),
             load_yaml_config("execution.yaml"),
             load_yaml_config("connectors.yaml"),
             load_yaml_config("paper_adapter.yaml"),
@@ -576,6 +632,7 @@ def _flatten_for_settings(data: dict[str, Any]) -> dict[str, Any]:
         "risk",
         "signal_engine",
         "paper_trading",
+        "portfolio_sync",
         "execution",
         "connectors",
         "paper_adapter",

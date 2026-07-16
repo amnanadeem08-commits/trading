@@ -7,13 +7,20 @@ Run:
 
 from __future__ import annotations
 
-from datetime import datetime
+import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from config.settings import get_settings
+from connectors.binance_spot_portfolio import (
+    BinanceSpotPortfolioGateway,
+    PortfolioAuthenticationError,
+)
 from core.llm_analyzer import (
     AIAuthenticationError,
     AIConfigurationError,
@@ -37,6 +44,21 @@ from core.signal_workbook import (
     read_workbook_metadata,
 )
 from main import MARKET_SHEETS, markets_to_run, save_results, scan_market
+from portfolio_sync import (
+    PortfolioAuthenticationStatus,
+    PortfolioHolding,
+    PortfolioSignalRow,
+    PortfolioSyncDiagnostics,
+    PortfolioSyncResult,
+    PortfolioSyncService,
+    PortfolioWarning,
+    PortfolioWarningCode,
+    portfolio_rows_for_display,
+    portfolio_stage_message,
+    project_portfolio_signals,
+    stable_unique_symbols,
+    unavailable_result,
+)
 
 SIGNAL_COLORS = {
     "BUY": "#1f9d66",
@@ -50,7 +72,7 @@ st.set_page_config(
     page_title="Trading Signal Dashboard",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -191,11 +213,7 @@ def workbook_has_proof_reasoning(path: Path) -> bool:
         sheets = pd.read_excel(path, sheet_name=None)
     except Exception:
         return False
-    return any(
-        frame_has_proof_reasoning(df)
-        for name, df in sheets.items()
-        if name != "_Meta"
-    )
+    return any(frame_has_proof_reasoning(df) for name, df in sheets.items() if name != "_Meta")
 
 
 def frame_has_auth_hold_fallback(df: pd.DataFrame) -> bool:
@@ -217,11 +235,7 @@ def workbook_has_auth_hold_fallback(path: Path) -> bool:
         sheets = pd.read_excel(path, sheet_name=None)
     except Exception:
         return False
-    return any(
-        frame_has_auth_hold_fallback(df)
-        for name, df in sheets.items()
-        if name != "_Meta"
-    )
+    return any(frame_has_auth_hold_fallback(df) for name, df in sheets.items() if name != "_Meta")
 
 
 def workbook_matches_configured_universe(path: Path) -> bool:
@@ -295,12 +309,19 @@ def load_workbook(path: Path) -> dict[str, pd.DataFrame]:
     return normalized
 
 
-def run_refresh(selected_market: str) -> tuple[dict[str, pd.DataFrame], str]:
+def run_refresh(
+    selected_market: str,
+    *,
+    crypto_symbols: tuple[str, ...] | None = None,
+) -> tuple[dict[str, pd.DataFrame], str]:
     assert_ai_ready(verify_remote=True)
     results = {}
     for market in markets_to_run(selected_market):
         with st.status(f"Refreshing {MARKET_SHEETS[market]} data...", expanded=False):
-            results[market] = scan_market(market)
+            results[market] = scan_market(
+                market,
+                symbols=crypto_symbols if market == "crypto" else None,
+            )
     out_path = save_results(
         results,
         selected_market,
@@ -308,6 +329,303 @@ def run_refresh(selected_market: str) -> tuple[dict[str, pd.DataFrame], str]:
         source="dashboard.py",
     )
     return results, out_path
+
+
+def should_run_portfolio_sync(
+    *,
+    refresh_clicked: bool,
+    force: bool = False,
+    cached_result: PortfolioSyncResult | None,
+    cached_at: datetime | None,
+    cache_ttl_seconds: float,
+    portfolio_sync_enabled: bool,
+) -> bool:
+    """Return whether a new Binance sync should run on this Streamlit rerun."""
+    if not portfolio_sync_enabled:
+        return False
+    if refresh_clicked or force:
+        return True
+    if cached_result is None or not cached_result.sync_succeeded:
+        return True
+    if cached_at is None:
+        return True
+    return datetime.now() - cached_at > timedelta(seconds=cache_ttl_seconds)
+
+
+def resolve_portfolio_sync_result(
+    new_result: PortfolioSyncResult,
+    cached_result: PortfolioSyncResult | None,
+) -> tuple[PortfolioSyncResult, bool]:
+    """Keep the last successful sync when a later attempt fails."""
+    if new_result.sync_succeeded:
+        return new_result, False
+    if cached_result is not None and cached_result.sync_succeeded:
+        merged_warnings = (*new_result.warnings, *cached_result.warnings)
+        return (
+            cached_result.model_copy(update={"warnings": merged_warnings}),
+            True,
+        )
+    return new_result, False
+
+
+def sync_binance_portfolio() -> PortfolioSyncResult:
+    """Return a non-fatal read-only portfolio snapshot for dashboard refresh."""
+    settings = get_settings().portfolio_sync
+    if not settings.enabled:
+        return PortfolioSyncResult(
+            diagnostics=PortfolioSyncDiagnostics(portfolio_sync_enabled=False)
+        )
+    api_key = os.getenv("BINANCE_API_KEY", "")
+    api_secret = os.getenv("BINANCE_API_SECRET", "")
+    if not api_key.strip() or not api_secret.strip():
+        return unavailable_result(
+            PortfolioWarningCode.MISSING_CREDENTIALS,
+            "Binance credentials were not loaded.",
+            diagnostics=PortfolioSyncDiagnostics(
+                portfolio_sync_enabled=True,
+                credentials_loaded=False,
+                authentication_status=PortfolioAuthenticationStatus.FAILED,
+            ),
+        )
+    try:
+        gateway = BinanceSpotPortfolioGateway.from_credentials(
+            api_key=api_key,
+            api_secret=api_secret,
+            timeout_milliseconds=settings.timeout_milliseconds,
+            max_retries=settings.max_retries,
+        )
+    except PortfolioAuthenticationError as error:
+        return unavailable_result(
+            PortfolioWarningCode.AUTHENTICATION_FAILED,
+            f"Binance authentication failed: {error}",
+            diagnostics=PortfolioSyncDiagnostics(
+                portfolio_sync_enabled=True,
+                credentials_loaded=True,
+                authentication_status=PortfolioAuthenticationStatus.FAILED,
+            ),
+        )
+    return PortfolioSyncService(gateway, settings).sync()
+
+
+def sync_binance_portfolio_with_timeout(timeout_seconds: float) -> PortfolioSyncResult:
+    """Run portfolio sync in a worker thread so scanner rendering is not blocked."""
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(sync_binance_portfolio)
+    try:
+        return future.result(timeout=timeout_seconds)
+    except FuturesTimeoutError:
+        return unavailable_result(
+            PortfolioWarningCode.API_TIMEOUT,
+            "Portfolio sync timed out; showing last cached result.",
+            diagnostics=PortfolioSyncDiagnostics(
+                portfolio_sync_enabled=True,
+                credentials_loaded=bool(
+                    os.getenv("BINANCE_API_KEY", "").strip()
+                    and os.getenv("BINANCE_API_SECRET", "").strip()
+                ),
+                fetch_balance_executed=True,
+                authentication_status=PortfolioAuthenticationStatus.NOT_VERIFIED,
+            ),
+        )
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
+
+
+def configured_portfolio_diagnostics() -> PortfolioSyncDiagnostics:
+    """Return non-sensitive pre-refresh configuration diagnostics."""
+    settings = get_settings().portfolio_sync
+    credentials_loaded = bool(
+        os.getenv("BINANCE_API_KEY", "").strip() and os.getenv("BINANCE_API_SECRET", "").strip()
+    )
+    return PortfolioSyncDiagnostics(
+        portfolio_sync_enabled=settings.enabled,
+        credentials_loaded=credentials_loaded,
+    )
+
+
+def render_portfolio_sync_diagnostics(
+    diagnostics: PortfolioSyncDiagnostics,
+    warnings: tuple[PortfolioWarning, ...],
+) -> None:
+    """Render non-sensitive connection state and portfolio pipeline stage counts."""
+    st.markdown("#### Portfolio Sync Diagnostics")
+    authentication = {
+        PortfolioAuthenticationStatus.SUCCESS: "Success",
+        PortfolioAuthenticationStatus.FAILED: "Failed",
+        PortfolioAuthenticationStatus.NOT_VERIFIED: "Not verified",
+        PortfolioAuthenticationStatus.NOT_ATTEMPTED: "Not attempted",
+    }[diagnostics.authentication_status]
+    left, right = st.columns(2)
+    with left:
+        st.write(
+            "**Portfolio Sync Enabled:** "
+            f"{'Yes' if diagnostics.portfolio_sync_enabled else 'No'}"
+        )
+        st.write(f"**Binance Connected:** {'Yes' if diagnostics.binance_connected else 'No'}")
+        st.write(f"**API Authentication:** {authentication}")
+        st.write(f"**Credentials Loaded:** {'Yes' if diagnostics.credentials_loaded else 'No'}")
+        st.write(
+            "**fetch_balance() Executed:** "
+            f"{'Yes' if diagnostics.fetch_balance_executed else 'No'}"
+        )
+        st.write(
+            "**fetch_balance() Success:** "
+            f"{'Yes' if diagnostics.fetch_balance_success else 'No'}"
+        )
+    with right:
+        st.write(f"**Holdings Returned:** {diagnostics.non_zero_balance_count}")
+        st.write(
+            "**Holdings After Market Validation:** "
+            f"{diagnostics.valid_market_count}"
+        )
+        st.write(
+            "**Holdings After Value Filter:** "
+            f"{diagnostics.above_threshold_count}"
+        )
+        st.write(f"**Final Portfolio Holdings:** {diagnostics.final_holding_count}")
+        if diagnostics.asset_symbols_returned:
+            st.write(
+                "**Asset Symbols Returned:** "
+                f"{', '.join(diagnostics.asset_symbols_returned)}"
+            )
+        st.write(f"**Mapped Assets:** {diagnostics.mapped_asset_count}")
+        st.write(f"**Successfully Valued:** {diagnostics.successfully_valued_count}")
+    st.write("**Structured Warnings:**")
+    if warnings:
+        st.dataframe(
+            pd.DataFrame(
+                [
+                    {
+                        "code": warning.code.value,
+                        "asset": warning.asset or "N/A",
+                        "message": warning.message,
+                    }
+                    for warning in warnings
+                ]
+            ),
+            width="stretch",
+            hide_index=True,
+        )
+    else:
+        st.caption("None")
+
+
+def render_portfolio_holdings(
+    holdings: tuple[PortfolioHolding, ...],
+    warnings: tuple[PortfolioWarning, ...],
+) -> None:
+    """Render compact portfolio holdings summary."""
+    if not holdings:
+        return
+    
+    st.markdown("### Portfolio Holdings")
+    st.caption(
+        "Your Binance balances. Values are estimated using underlying asset prices."
+    )
+    
+    # Check if we have any LD* assets
+    has_locked = any(h.holding_type == "Binance Earn" for h in holdings)
+    if has_locked:
+        st.info(
+            "Your Binance balance includes Earn/locked positions (LD* assets). "
+            "These are shown using their underlying market pairs for read-only analysis."
+        )
+    
+    # Build compact display rows
+    rows = []
+    for holding in holdings:
+        rows.append({
+            "Asset": holding.asset,
+            "Holding Type": holding.holding_type,
+            "Quantity": f"{holding.quantity:.8f}",
+            "Estimated Value (USDT)": f"${holding.current_value_usdt:.2f}",
+            "Analysis Pair": holding.scan_symbol if not holding.is_stable_balance else "N/A",
+        })
+    
+    st.dataframe(
+        pd.DataFrame(rows),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def render_portfolio_signals(
+    rows: tuple[PortfolioSignalRow, ...],
+    warnings: tuple[PortfolioWarning, ...],
+    diagnostics: PortfolioSyncDiagnostics,
+    holdings: tuple[PortfolioHolding, ...] = (),
+    *,
+    status_message: str | None = None,
+    from_cache: bool = False,
+) -> None:
+    """Render portfolio analysis as visual cards matching Signal Details style."""
+    st.markdown("### Portfolio Signals")
+    st.caption(
+        "Read-only market analysis for your holdings. "
+        "Suggested actions are advisory; no trades are placed."
+    )
+    
+    # Show warnings that aren't about LD* missing pairs (those are expected)
+    relevant_warnings = [
+        w for w in warnings
+        if not (w.code == PortfolioWarningCode.MISSING_PAIR and w.asset and w.asset.startswith("LD"))
+    ]
+    for warning in relevant_warnings:
+        st.warning(warning.message)
+    
+    if not rows:
+        # Check if we have holdings but no signals (e.g., only stable balances)
+        if holdings:
+            stable_count = sum(1 for h in holdings if h.is_stable_balance)
+            if stable_count == len(holdings):
+                st.info(
+                    "All portfolio holdings are stablecoins (USDT). "
+                    "No market analysis signals are generated for stable balances."
+                )
+                return
+        
+        reason = status_message or portfolio_stage_message(
+            PortfolioSyncResult(diagnostics=diagnostics, warnings=warnings),
+            from_cache=from_cache,
+        )
+        st.info(f"No portfolio signals available. Reason: {reason}")
+        return
+    
+    # Render portfolio signals as cards
+    for row in rows:
+        signal = row.signal
+        color = SIGNAL_COLORS.get(signal, "#6b7280")
+        
+        # Format optional fields
+        entry = f"${row.entry_zone:.2f}" if isinstance(row.entry_zone, (int, float)) else "N/A"
+        stop = f"${row.stop_loss:.2f}" if isinstance(row.stop_loss, (int, float)) else "N/A"
+        tp = f"${row.take_profit:.2f}" if isinstance(row.take_profit, (int, float)) else "N/A"
+        
+        st.markdown(
+            f"""
+            <div class="asset-card">
+                <div class="asset-top">
+                    <div>
+                        <div class="asset-symbol">{row.asset}</div>
+                        <div class="muted">
+                            Analysis: {row.analysis_symbol} · 
+                            Value: ${row.current_value_usdt:.2f} · 
+                            Confidence: {row.confidence}
+                        </div>
+                    </div>
+                    <span class="badge" style="--accent:{color}">{signal}</span>
+                </div>
+                <div class="reasoning">{row.reasoning}</div>
+                <div class="muted" style="margin-top:8px">
+                    Suggested: {row.suggested_action}
+                </div>
+                <div class="muted" style="margin-top:4px">
+                    Entry: {entry} · Stop: {stop} · Target: {tp}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def signal_counts(df: pd.DataFrame) -> pd.Series:
@@ -453,61 +771,7 @@ def render_market(sheet_name: str, df: pd.DataFrame, *, market: str):
         st.dataframe(df, use_container_width=True, hide_index=True)
 
 
-st.markdown(
-    """
-    <div class="main-title">
-        <h1>Trading Signal Dashboard</h1>
-        <p>Crypto, PSX, and PMEX signals in one refreshable visual workspace.</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-with st.sidebar:
-    st.header("Refresh")
-    diagnostics = startup_diagnostics()
-    st.caption(f"Provider: {diagnostics['provider']}")
-    st.caption(f"SDK: {diagnostics['sdk']}")
-    st.caption(f"Base URL: {diagnostics['base_url']}")
-    st.caption(f"Model: {diagnostics['model']}")
-    st.caption(f"API key configured: {diagnostics['api_key_configured']}")
-    st.caption(f"Auth method: {diagnostics['authentication_method']}")
-    universe = configured_universe_counts()
-    st.caption(
-        f"Monitored universe: {universe['crypto']} crypto · "
-        f"{universe['psx']} PSX · {universe['pmex']} PMEX · "
-        f"{universe['total']} total (config/signal_universe.yaml)"
-    )
-    selected_market = st.segmented_control(
-        "Market",
-        options=["all", "both", "crypto", "psx", "pmex"],
-        default="all",
-        format_func=lambda value: {
-            "all": "All Markets",
-            "both": "Both",
-            "crypto": "Crypto",
-            "psx": "PSX",
-            "pmex": "PMEX",
-        }[value],
-    )
-    st.caption(
-        "Refresh fetches live data, runs indicators, saves a new Excel workbook, "
-        "and updates charts."
-    )
-    refresh = st.button("Refresh Results", type="primary", use_container_width=True)
-
-    st.divider()
-    workbook_path = st.session_state.get("workbook_path")
-    if workbook_path and Path(workbook_path).exists():
-        with Path(workbook_path).open("rb") as file:
-            st.download_button(
-                "Download Excel",
-                file,
-                file_name=Path(workbook_path).name,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-            )
-
+cleared_invalid_results = False
 if "results" in st.session_state and (
     results_have_auth_hold_fallback(st.session_state.results)
     or results_have_proof_reasoning(st.session_state.results)
@@ -515,10 +779,7 @@ if "results" in st.session_state and (
     st.session_state.results = {}
     st.session_state.workbook_path = None
     st.session_state.last_updated = None
-    st.warning(
-        "Cleared in-memory results that were not from a production scan "
-        "(proof/auth-fallback rows). Click **Refresh Results** to run a live production scan."
-    )
+    cleared_invalid_results = True
 
 if "results" not in st.session_state:
     latest = latest_workbook()
@@ -537,21 +798,140 @@ if "results" not in st.session_state:
         st.session_state.workbook_path = None
         st.session_state.last_updated = None
 
+if "portfolio_holdings" not in st.session_state:
+    st.session_state.portfolio_holdings = ()
+if "portfolio_rows" not in st.session_state:
+    st.session_state.portfolio_rows = ()
+if "portfolio_warnings" not in st.session_state:
+    st.session_state.portfolio_warnings = ()
+if "portfolio_diagnostics" not in st.session_state:
+    st.session_state.portfolio_diagnostics = configured_portfolio_diagnostics()
+if "portfolio_sync_result" not in st.session_state:
+    st.session_state.portfolio_sync_result = None
+if "portfolio_sync_cached_at" not in st.session_state:
+    st.session_state.portfolio_sync_cached_at = None
+if "portfolio_sync_from_cache" not in st.session_state:
+    st.session_state.portfolio_sync_from_cache = False
+if "portfolio_sync_pending" not in st.session_state:
+    portfolio_settings = get_settings().portfolio_sync
+    has_crypto_results = "crypto" in st.session_state.get("results", {})
+    st.session_state.portfolio_sync_pending = (
+        portfolio_settings.enabled and has_crypto_results
+    )
+
+st.markdown(
+    """
+    <div class="main-title">
+        <h1>Trading Signal Dashboard</h1>
+        <p>Crypto, PSX, and PMEX signals in one refreshable visual workspace.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+refresh_column, download_column = st.columns([1, 1])
+with refresh_column:
+    st.write("")
+    refresh = st.button("Refresh Results", type="primary", use_container_width=True)
+with download_column:
+    st.write("")
+    workbook_path = st.session_state.get("workbook_path")
+    if workbook_path and Path(workbook_path).exists():
+        with Path(workbook_path).open("rb") as file:
+            st.download_button(
+                "Download Excel",
+                file,
+                file_name=Path(workbook_path).name,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+
+if cleared_invalid_results:
+    st.warning(
+        "Cleared in-memory results that were not from a production scan "
+        "(proof/auth-fallback rows). Click **Refresh Results** to run a live production scan."
+    )
+
 if refresh:
     try:
-        results, out_path = run_refresh(selected_market)
+        selected = "all"
+        cached_result = st.session_state.get("portfolio_sync_result")
+        cached_symbols = (
+            cached_result.portfolio_symbols
+            if isinstance(cached_result, PortfolioSyncResult)
+            else ()
+        )
+        crypto_symbols = stable_unique_symbols(
+            configured_crypto_symbols(),
+            cached_symbols,
+        )
+        results, out_path = run_refresh(
+            selected,
+            crypto_symbols=crypto_symbols,
+        )
         st.session_state.results = results
         st.session_state.workbook_path = out_path
         st.session_state.last_updated = datetime.now()
+        portfolio_settings = get_settings().portfolio_sync
+        st.session_state.portfolio_sync_pending = (
+            portfolio_settings.enabled and "crypto" in markets_to_run(selected)
+        )
         st.rerun()
     except (AIAuthenticationError, AIConfigurationError, AIExecutionError) as error:
         st.error(f"AI configuration/authentication failed: {error}")
         st.stop()
 
+if st.session_state.get("portfolio_sync_pending"):
+    portfolio_settings = get_settings().portfolio_sync
+    cached_result = (
+        st.session_state.get("portfolio_sync_result")
+        if isinstance(st.session_state.get("portfolio_sync_result"), PortfolioSyncResult)
+        else None
+    )
+    if should_run_portfolio_sync(
+        refresh_clicked=False,
+        force=True,
+        cached_result=cached_result,
+        cached_at=st.session_state.get("portfolio_sync_cached_at"),
+        cache_ttl_seconds=portfolio_settings.cache_ttl_seconds,
+        portfolio_sync_enabled=portfolio_settings.enabled,
+    ):
+        new_result = sync_binance_portfolio_with_timeout(
+            portfolio_settings.sync_timeout_seconds
+        )
+        portfolio_result, portfolio_from_cache = resolve_portfolio_sync_result(
+            new_result,
+            cached_result,
+        )
+        if new_result.sync_succeeded:
+            st.session_state.portfolio_sync_result = new_result
+            st.session_state.portfolio_sync_cached_at = datetime.now()
+    else:
+        portfolio_result = cached_result or PortfolioSyncResult()
+        portfolio_from_cache = cached_result is not None
+    crypto_rows = (
+        st.session_state.get("results", {}).get("crypto", pd.DataFrame()).to_dict(orient="records")
+    )
+    portfolio_rows = project_portfolio_signals(
+        portfolio_result.holdings,
+        crypto_rows,
+    )
+    st.session_state.portfolio_holdings = portfolio_result.holdings
+    st.session_state.portfolio_rows = portfolio_rows
+    st.session_state.portfolio_warnings = portfolio_result.warnings
+    st.session_state.portfolio_diagnostics = portfolio_result.diagnostics
+    st.session_state.portfolio_sync_from_cache = portfolio_from_cache
+    st.session_state.portfolio_sync_pending = False
+    st.rerun()
+
 last_updated = st.session_state.get("last_updated")
 workbook_path_display = st.session_state.get("workbook_path")
 if last_updated and workbook_path_display:
-    meta = read_workbook_metadata(Path(workbook_path_display)) if Path(str(workbook_path_display)).exists() else {}
+    meta = (
+        read_workbook_metadata(Path(workbook_path_display))
+        if Path(str(workbook_path_display)).exists()
+        else {}
+    )
     generator = meta.get("generator", "unknown")
     st.caption(
         f"Last updated: {last_updated.strftime('%Y-%m-%d %H:%M:%S')} | "
@@ -570,4 +950,49 @@ else:
     tabs = st.tabs([sheet for _, sheet in available_tabs])
     for tab, (market, sheet_name) in zip(tabs, available_tabs, strict=True):
         with tab:
+            # Crypto tab order: Portfolio Holdings → Portfolio Signals → Scanner Results → Diagnostics
+            if market == "crypto" and get_settings().portfolio_sync.enabled:
+                portfolio_holdings = tuple(st.session_state.get("portfolio_holdings", ()))
+                
+                # 1. Portfolio Holdings (user's actual Binance positions)
+                render_portfolio_holdings(
+                    portfolio_holdings,
+                    tuple(st.session_state.get("portfolio_warnings", ())),
+                )
+                
+                # 2. Portfolio Signals (analysis for user's positions)
+                render_portfolio_signals(
+                    tuple(st.session_state.get("portfolio_rows", ())),
+                    tuple(st.session_state.get("portfolio_warnings", ())),
+                    st.session_state.get(
+                        "portfolio_diagnostics",
+                        configured_portfolio_diagnostics(),
+                    ),
+                    holdings=portfolio_holdings,
+                    from_cache=bool(st.session_state.get("portfolio_sync_from_cache")),
+                )
+            
+            # 3-5. Scanner metrics, charts, and signal details
             render_market(sheet_name, results.get(market, pd.DataFrame()), market=market)
+            
+            # 6. Collapsed diagnostics at bottom
+            with st.expander("System and diagnostics", expanded=False):
+                diagnostics = startup_diagnostics()
+                universe = configured_universe_counts()
+                st.caption(
+                    f"Provider: {diagnostics['provider']} · SDK: {diagnostics['sdk']} · "
+                    f"Model: {diagnostics['model']} · API key configured: "
+                    f"{diagnostics['api_key_configured']} · Auth: {diagnostics['authentication_method']}"
+                )
+                st.caption(
+                    f"Monitored universe: {universe['crypto']} crypto · "
+                    f"{universe['psx']} PSX · {universe['pmex']} PMEX · "
+                    f"{universe['total']} total (config/signal_universe.yaml)"
+                )
+                
+                # Portfolio sync diagnostics only in crypto tab
+                if market == "crypto" and get_settings().portfolio_sync.enabled:
+                    render_portfolio_sync_diagnostics(
+                        st.session_state.portfolio_diagnostics,
+                        tuple(st.session_state.portfolio_warnings),
+                    )

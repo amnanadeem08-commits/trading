@@ -1,0 +1,16 @@
+# Read-only Binance Spot portfolio synchronization.
+portfolio_sync:
+  portfolio_sync_enabled: true
+  minimum_holding_usdt: 1.0
+  quote_asset: USDT
+  api_timeout_seconds: 10.0
+  sync_timeout_seconds: 30.0
+  cache_ttl_seconds: 300.0
+  max_retries: 1
+  asset_analysis_mapping:
+    BNSOL: SOL/USDT
+    LDBTC: BTC/USDT
+    LDETH: ETH/USDT
+    LDBNB: BNB/USDT
+    LDBNSOL: SOL/USDT
+    LDUSDT: USDT

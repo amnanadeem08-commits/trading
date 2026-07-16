@@ -21,6 +21,7 @@ PHASE_DIRS = [
     "phase_backtest",
     "phase_validation",
     "phase_strategy",
+    "phase_portfolio",
 ]
 
 SPRINT_REQUIRED = [

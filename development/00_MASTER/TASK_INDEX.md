@@ -14,6 +14,18 @@
 
 
 
+## Sprint-006 — Binance Spot Portfolio Sync and Analysis
+
+
+
+| ID | Task | Status |
+
+|----|------|--------|
+
+| PORTFOLIO-001 | Binance Spot portfolio sync and analysis | Complete |
+
+
+
 ## Sprint-005 — Deterministic Strategy Builder
 
 

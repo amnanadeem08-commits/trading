@@ -2,6 +2,34 @@
 
 All notable TIOS and platform milestones are recorded here. Historical certification files remain authoritative for their gates.
 
+## 2026-07-16 — PORTFOLIO-001 Binance Spot Portfolio Sync and Analysis
+
+### Added
+
+- `portfolio_sync/` — typed holdings, warnings, stable universe merge, sync service,
+  and Portfolio Signals projection
+- `connectors/binance_spot_portfolio.py` — read-only balance, market validation,
+  and ticker gateway with timeout/authentication translation
+- `config/portfolio_sync.yaml` — enabled read-only sync, 1 USDT dust floor,
+  timeout/retry settings, and BNSOL analysis mapping
+- Focused portfolio, scanner integration, configuration, and dashboard layout tests
+- `development/02_PHASES/phase_portfolio/` — Sprint-006 task and completion report
+
+### Changed
+
+- Crypto scanner accepts an optional merged fixed-plus-portfolio symbol universe
+- Dashboard adds a separate Portfolio Signals table and non-fatal warnings
+- Market, Refresh, and Excel export controls moved to the main toolbar; redundant
+  sidebar removed and diagnostics moved to an expander
+- `pyproject.toml` registers portfolio package, tests, coverage, mypy, and import boundary
+- NEXT_TASK → **none** (PORTFOLIO-001 foundation delivered)
+
+### Notes
+
+- Targeted/regression suite: 40 passed; package/gateway coverage: 91.38%
+- Architecture validation and all 33 import-linter contracts passed
+- All suggested actions are advisory; no execution, futures, leverage, or broker work
+
 ## 2026-07-16 — STRATEGY-001 Deterministic Strategy Foundation
 
 ### Added

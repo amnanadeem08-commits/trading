@@ -20,6 +20,7 @@ import argparse
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -44,6 +45,9 @@ from core.signal_workbook import (
     write_meta_sheet,
 )
 from legacy_config import MARKET, SIGNAL_ONLY
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 MARKET_SHEETS = {
     "psx": "PSX",
@@ -101,10 +105,16 @@ def get_market_context(market: str) -> str:
     return note
 
 
-def get_symbols_and_fetcher(market: str):
+def get_symbols_and_fetcher(
+    market: str,
+    *,
+    symbols_override: Sequence[str] | None = None,
+):
     if market == "crypto":
         exchange = get_exchange()
-        symbols = configured_crypto_symbols()
+        symbols = (
+            list(symbols_override) if symbols_override is not None else configured_crypto_symbols()
+        )
         print(f"Using configured crypto universe ({len(symbols)} symbols)...")
         print(f"  {', '.join(symbols)}\n")
         return symbols, lambda symbol: fetch_ohlcv_df(exchange, symbol), exchange.rateLimit / 1000
@@ -121,10 +131,17 @@ def get_symbols_and_fetcher(market: str):
     return symbols, fetch_psx_ohlcv_df, 1
 
 
-def scan_market(market: str) -> pd.DataFrame:
+def scan_market(
+    market: str,
+    *,
+    symbols: Sequence[str] | None = None,
+) -> pd.DataFrame:
     print(f"\n=== Scanning {market.upper()} ===")
     sentiment_note = get_market_context(market)
-    symbols, fetch_ohlcv, sleep_seconds = get_symbols_and_fetcher(market)
+    symbols, fetch_ohlcv, sleep_seconds = get_symbols_and_fetcher(
+        market,
+        symbols_override=symbols,
+    )
 
     results = []
     for i, symbol in enumerate(symbols, 1):
@@ -142,7 +159,7 @@ def scan_market(market: str) -> pd.DataFrame:
             print(f"  -> {signal['signal']} (confidence: {signal['confidence']})")
             time.sleep(sleep_seconds)
 
-        except (AIAuthenticationError, AIConfigurationError):
+        except AIAuthenticationError, AIConfigurationError:
             # Fail closed on auth/config — do not continue with a partial poisoned run.
             raise
         except AIExecutionError as e:

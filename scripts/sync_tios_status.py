@@ -77,6 +77,8 @@ def sync(dry_run: bool = False) -> None:
         signal_status = f"V1.0 accepted; prediction validation implementation ({active})"
     elif active.upper().startswith("STRATEGY-"):
         signal_status = f"V1.0 accepted; strategy builder implementation ({active})"
+    elif active.upper().startswith("PORTFOLIO-"):
+        signal_status = f"V1.0 accepted; portfolio analysis implementation ({active})"
     elif active.upper().startswith("SIG-PLAN"):
         signal_status = "Planning in progress"
     elif active.upper().startswith("SIG-"):

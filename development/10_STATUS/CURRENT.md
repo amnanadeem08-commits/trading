@@ -5,9 +5,9 @@
 
 | Field | Value |
 |-------|-------|
-| Sprint | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
+| Sprint | Sprint-006 — Binance Spot Portfolio Sync and Analysis (**PORTFOLIO-001 complete**) |
 | Active coding task | none |
-| Milestone | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
+| Milestone | Sprint-006 — Binance Spot Portfolio Sync and Analysis (**PORTFOLIO-001 complete**) |
 | Phase 0 | Certified |
 | Foundation | Certified v1.0.0 |
 | Phase 2 ML | Complete |

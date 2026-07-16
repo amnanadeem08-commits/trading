@@ -9,12 +9,12 @@
 |-------|--------|
 | Product | Khaldun Trade |
 | Current version (platform baseline) | Foundation + Phase 2 ML + Signal Engine V1.0 + Paper Trading V1.2 + Backtesting V1 + Prediction Validation foundation |
-| Product version target | Deterministic Strategy Builder foundation delivered |
-| Current sprint | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
+| Product version target | V1.4 Portfolio Analytics foundation delivered |
+| Current sprint | Sprint-006 — Binance Spot Portfolio Sync and Analysis (**PORTFOLIO-001 complete**) |
 | Current task | — |
 | Task status | — |
 | Previous task | VALIDATION-001 (**complete**) |
-| Current milestone | Deterministic rule-based strategy foundation **delivered** |
+| Current milestone | Read-only Binance Spot portfolio analysis **delivered** |
 | Coverage gate | ≥ 88% |
 | Broker automation | Disabled |
 | Signal Engine | V1.0 path **accepted** |
@@ -22,6 +22,7 @@
 | Backtesting | V1 path **accepted** |
 | Prediction Validation | Foundation **delivered** (VALIDATION-001) |
 | Strategy Builder foundation | 100% (STRATEGY-001 complete) |
+| Portfolio Analytics foundation | 100% (PORTFOLIO-001 complete) |
 | Signal universe | 20 crypto + 20 PSX + all PMEX instruments (`signal_universe.yaml`) |
 
 ## Progress (Roadmap View)

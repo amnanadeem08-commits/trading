@@ -13,14 +13,15 @@
 | Status | — |
 | Title | — |
 | Task document | — |
-| Phase | `phase_strategy` (STRATEGY-001 complete) |
+| Phase | `phase_portfolio` (PORTFOLIO-001 complete) |
 | Allowed work | None until next task opened via TIOS |
-| Forbidden | STRATEGY-002+ without handoff; optimization; ranking; AI generation; UI; live execution; futures; leverage; broker integration |
+| Forbidden | PORTFOLIO-002+ without handoff; order placement; broker automation; futures; leverage; margin |
 
 ## Recently Completed
 
 | ID | Title | Result |
 |----|-------|--------|
+| PORTFOLIO-001 | Binance Spot Portfolio Sync and Analysis | Complete |
 | STRATEGY-001 | Deterministic Rule-Based Strategy Builder Foundation | Complete |
 | VALIDATION-001 | Prediction Outcome Validation Foundation | Complete |
 | BACKTEST-003 | Backtesting Results, Acceptance, and Reporting | Complete — V1 accepted |
@@ -41,4 +42,4 @@ python scripts/sync_tios_status.py
 python scripts/validate_tios.py
 ```
 
-**Note:** Signal Engine V1.0, Paper Trading V1.2, Backtesting V1, prediction validation, and deterministic strategy foundations are delivered. Broker automation remains disabled.
+**Note:** Signal Engine V1.0 and the read-only portfolio analysis foundation are delivered. Broker automation remains disabled.
