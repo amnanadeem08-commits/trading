@@ -2,6 +2,29 @@
 
 All notable TIOS and platform milestones are recorded here. Historical certification files remain authoritative for their gates.
 
+## 2026-07-16 — STRATEGY-001 Deterministic Strategy Foundation
+
+### Added
+
+- `strategy_builder/` — typed strategy/rule/indicator contracts, deterministic identity,
+  serialization, registry, indicator calculations, and fail-closed evaluator
+- Required EMA/RSI, Bollinger, and MACD/volume example definitions
+- Backtesting signal-boundary adapter without changes to the accepted runner
+- `tests/strategy_builder/` and adapter integration acceptance tests
+- `development/02_PHASES/phase_strategy/` — Sprint-005 task and completion report
+
+### Changed
+
+- `pyproject.toml` — package, tests, coverage, mypy, and import-linter registration
+- TIOS sync/validation scripts recognize the strategy phase
+- NEXT_TASK → **none** (STRATEGY-001 foundation delivered)
+
+### Notes
+
+- Targeted suite: 27 passed; strategy package coverage: 90.49%
+- Architecture validation and all 32 import-linter contracts passed
+- No optimization, ranking, AI strategy generation, UI, broker, leverage, or execution work
+
 ## 2026-07-16 — VALIDATION-001 Prediction Outcome Validation Foundation
 
 ### Added

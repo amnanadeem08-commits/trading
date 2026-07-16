@@ -17,9 +17,9 @@
 
 | Item | Value |
 |------|-------|
-| Current sprint | Sprint-004 — Prediction Validation (**VALIDATION-001 complete**) |
-| Active coding task | **none** (VALIDATION-001 complete; foundation delivered) |
-| Prior implementation | VALIDATION-001 complete; BACKTEST-001…003 complete; PAPER-001…007 complete; Signal Engine V1.0 accepted |
+| Current sprint | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
+| Active coding task | **none** |
+| Prior implementation | STRATEGY-001 complete; VALIDATION-001 complete; BACKTEST-001…003 complete; PAPER-001…007 complete; Signal Engine V1.0 accepted |
 | Prior sprint | Sprint-001 — Signal Engine (**complete**) |
 | Rule | Never implement features outside the active task in NEXT_TASK.md; do not invent tasks when none |
 
@@ -31,6 +31,7 @@
 | V1.1 | Backtesting | **Accepted** (BACKTEST-001…003) |
 | V1.2 | Paper Trading | **Accepted** (PAPER-001…007) |
 | V1.3 | AI Validation Loop | **Foundation delivered** (VALIDATION-001) |
+| Strategy Builder | Deterministic rule foundation | **Complete** (STRATEGY-001) |
 | V1.4 | Portfolio Analytics | Placeholder |
 | V1.5 | Broker Integrations | Placeholder — **disabled until approved** |
 | V2.0 | Autonomous AI Trading Platform | Placeholder — **disabled until approved** |

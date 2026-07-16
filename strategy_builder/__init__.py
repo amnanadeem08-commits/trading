@@ -1,0 +1,78 @@
+"""Deterministic and auditable rule-based strategy foundation."""
+
+from strategy_builder.contracts import (
+    CandleField,
+    ComparisonOperator,
+    ComparisonRule,
+    ConstantOperand,
+    EntryRules,
+    GroupOperator,
+    IndicatorKind,
+    IndicatorOperand,
+    IndicatorSpec,
+    PositionContext,
+    PositionSide,
+    ProtectionKind,
+    ProtectionRule,
+    RuleGroup,
+    RuleTrace,
+    StrategyDefinition,
+    StrategyDraft,
+    StrategyEvaluationResult,
+    StrategyOutcome,
+    TrailingStopConfig,
+)
+from strategy_builder.evaluation import StrategyEvaluator
+from strategy_builder.exceptions import (
+    IndicatorEvaluationError,
+    StrategyBuilderError,
+    StrategyNotFoundError,
+    StrategyRegistrationError,
+    StrategyValidationError,
+)
+from strategy_builder.identity import (
+    canonical_strategy_json,
+    create_strategy,
+    resolve_strategy_id,
+    resolve_version_hash,
+    validate_strategy_identity,
+)
+from strategy_builder.registry import StrategyRegistry
+from strategy_builder.serialization import deserialize_strategy, serialize_strategy
+
+__all__ = [
+    "CandleField",
+    "ComparisonOperator",
+    "ComparisonRule",
+    "ConstantOperand",
+    "EntryRules",
+    "GroupOperator",
+    "IndicatorEvaluationError",
+    "IndicatorKind",
+    "IndicatorOperand",
+    "IndicatorSpec",
+    "PositionContext",
+    "PositionSide",
+    "ProtectionKind",
+    "ProtectionRule",
+    "RuleGroup",
+    "RuleTrace",
+    "StrategyBuilderError",
+    "StrategyDefinition",
+    "StrategyDraft",
+    "StrategyEvaluationResult",
+    "StrategyEvaluator",
+    "StrategyNotFoundError",
+    "StrategyOutcome",
+    "StrategyRegistrationError",
+    "StrategyRegistry",
+    "StrategyValidationError",
+    "TrailingStopConfig",
+    "canonical_strategy_json",
+    "create_strategy",
+    "deserialize_strategy",
+    "resolve_strategy_id",
+    "resolve_version_hash",
+    "serialize_strategy",
+    "validate_strategy_identity",
+]

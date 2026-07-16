@@ -14,6 +14,18 @@
 
 
 
+## Sprint-005 — Deterministic Strategy Builder
+
+
+
+| ID | Task | Status |
+
+|----|------|--------|
+
+| STRATEGY-001 | Deterministic rule-based strategy builder foundation | Complete |
+
+
+
 ## Sprint-004 — Prediction Validation
 
 

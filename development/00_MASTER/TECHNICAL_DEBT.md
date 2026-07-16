@@ -35,6 +35,7 @@
 | TD-PAPER-04 | Low | Performance metrics max drawdown requires caller-provided PnL ledger | Fill executor uses instance ledger, not global singleton | Wire shared ledger or orchestrator helper in future sprint if needed |
 | TD-BT-01 | Low | Backtest fill pricing duplicates PAPER-004 math in `backtesting/engine/pricing.py` | Layer separation forbids `backtesting` → `paper_trading` import | Extract shared pricing contract to `models/` or thin shared module in future sprint if parity audit required |
 | TD-BT-02 | Low | Paper `FillConfig.fill_fraction` has no backtest equivalent (backtest assumes 1.0) | Partial-fill simulation differs if fraction < 1 | Add optional fill_fraction to `BacktestConfig` only if product requires partial fills in replay |
+| TD-TIOS-01 | Medium | Repository-wide lint/format/type/test baseline is not fully green outside STRATEGY-001 | Global gates report legacy formatting, missing pandas stubs, pytest import collisions, and architecture assertion drift despite STRATEGY-001 gates passing | Open a dedicated maintenance task; do not resolve under feature scope |
 
 
 

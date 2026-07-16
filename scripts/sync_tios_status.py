@@ -75,6 +75,8 @@ def sync(dry_run: bool = False) -> None:
         signal_status = f"V1.0 accepted; backtesting implementation ({active})"
     elif active.upper().startswith("VALIDATION-"):
         signal_status = f"V1.0 accepted; prediction validation implementation ({active})"
+    elif active.upper().startswith("STRATEGY-"):
+        signal_status = f"V1.0 accepted; strategy builder implementation ({active})"
     elif active.upper().startswith("SIG-PLAN"):
         signal_status = "Planning in progress"
     elif active.upper().startswith("SIG-"):
@@ -89,7 +91,7 @@ def sync(dry_run: bool = False) -> None:
 |-------|-------|
 | Sprint | {sprint} |
 | Active coding task | {active} |
-| Milestone | Signal Engine V1.0 via TIOS |
+| Milestone | {sprint} |
 | Phase 0 | Certified |
 | Foundation | Certified v1.0.0 |
 | Phase 2 ML | Complete |

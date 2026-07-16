@@ -13,14 +13,15 @@
 | Status | — |
 | Title | — |
 | Task document | — |
-| Phase | `phase_validation` (VALIDATION-001 complete) |
+| Phase | `phase_strategy` (STRATEGY-001 complete) |
 | Allowed work | None until next task opened via TIOS |
-| Forbidden | Out-of-queue features; live broker automation; VALIDATION-002+ without handoff |
+| Forbidden | STRATEGY-002+ without handoff; optimization; ranking; AI generation; UI; live execution; futures; leverage; broker integration |
 
 ## Recently Completed
 
 | ID | Title | Result |
 |----|-------|--------|
+| STRATEGY-001 | Deterministic Rule-Based Strategy Builder Foundation | Complete |
 | VALIDATION-001 | Prediction Outcome Validation Foundation | Complete |
 | BACKTEST-003 | Backtesting Results, Acceptance, and Reporting | Complete — V1 accepted |
 | BACKTEST-002 | Historical Signal Replay and Trade Lifecycle | Complete |
@@ -40,4 +41,4 @@ python scripts/sync_tios_status.py
 python scripts/validate_tios.py
 ```
 
-**Note:** Signal Engine V1.0, Paper Trading V1.2, Backtesting V1, and prediction validation foundation are delivered. Broker automation remains disabled.
+**Note:** Signal Engine V1.0, Paper Trading V1.2, Backtesting V1, prediction validation, and deterministic strategy foundations are delivered. Broker automation remains disabled.

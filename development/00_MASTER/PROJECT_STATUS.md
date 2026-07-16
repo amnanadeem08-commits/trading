@@ -9,18 +9,19 @@
 |-------|--------|
 | Product | Khaldun Trade |
 | Current version (platform baseline) | Foundation + Phase 2 ML + Signal Engine V1.0 + Paper Trading V1.2 + Backtesting V1 + Prediction Validation foundation |
-| Product version target | V1.3 AI Validation Loop (foundation) |
-| Current sprint | Sprint-004 — Prediction Validation (**VALIDATION-001 complete**) |
+| Product version target | Deterministic Strategy Builder foundation delivered |
+| Current sprint | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
 | Current task | — |
 | Task status | — |
 | Previous task | VALIDATION-001 (**complete**) |
-| Current milestone | Prediction outcome validation foundation **delivered** |
+| Current milestone | Deterministic rule-based strategy foundation **delivered** |
 | Coverage gate | ≥ 88% |
 | Broker automation | Disabled |
 | Signal Engine | V1.0 path **accepted** |
 | Paper Trading | V1.2 path **accepted** |
 | Backtesting | V1 path **accepted** |
 | Prediction Validation | Foundation **delivered** (VALIDATION-001) |
+| Strategy Builder foundation | 100% (STRATEGY-001 complete) |
 | Signal universe | 20 crypto + 20 PSX + all PMEX instruments (`signal_universe.yaml`) |
 
 ## Progress (Roadmap View)

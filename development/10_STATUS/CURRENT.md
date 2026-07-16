@@ -5,9 +5,9 @@
 
 | Field | Value |
 |-------|-------|
-| Sprint | Sprint-004 — Prediction Validation (**VALIDATION-001 complete**) |
+| Sprint | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
 | Active coding task | none |
-| Milestone | Signal Engine V1.0 via TIOS |
+| Milestone | Sprint-005 — Deterministic Strategy Builder (**STRATEGY-001 complete**) |
 | Phase 0 | Certified |
 | Foundation | Certified v1.0.0 |
 | Phase 2 ML | Complete |
