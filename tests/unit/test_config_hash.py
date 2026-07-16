@@ -43,7 +43,8 @@ def test_list_configuration_files_complete() -> None:
     assert "framework_adapters.yaml" in files
     assert "artifact_management.yaml" in files
     assert "storage_providers.yaml" in files
-    assert len(files) == 32
+    assert "portfolio_sync.yaml" in files
+    assert len(files) == 34
 
 
 @pytest.mark.unit
@@ -77,3 +78,4 @@ def test_load_merged_configuration_has_sections() -> None:
     assert "framework_adapters" in merged
     assert "artifact_management" in merged
     assert "storage_providers" in merged
+    assert "portfolio_sync" in merged
