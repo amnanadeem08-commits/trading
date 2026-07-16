@@ -46,14 +46,14 @@ Full code gates + validate_tios
 
 ## Acceptance Criteria
 
-- [ ] Simulated fill recorded
-- [ ] Position/PnL ledger updated
-- [ ] Deterministic replay-friendly behavior
+- [x] Simulated fill recorded
+- [x] Position/PnL ledger updated
+- [x] Deterministic replay-friendly behavior
 
 ## Status
 
-todo
+**Complete** (2026-07-16)
 
 ## Completion Notes
 
-_Not started._
+See `PAPER-004_COMPLETION_REPORT.md`. Fill path uses `paper_trading.fill` deterministic engine (spread/slippage/commission) with SHA256-based IDs; orchestrator `execute_simulated_fill` chains PAPER-003 risk gate → fill → ledgers → portfolio state.

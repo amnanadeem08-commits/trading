@@ -45,14 +45,17 @@ Full code gates + validate_tios
 
 ## Acceptance Criteria
 
-- [ ] Events emitted on fill
-- [ ] Audit written on fill/reject
-- [ ] Lifecycle doc still accurate
+- [x] Events emitted on fill
+- [x] Audit written on fill/reject
+- [x] Lifecycle doc still accurate
 
 ## Status
 
-todo
+**Complete** (2026-07-16)
 
 ## Completion Notes
 
-_Not started._
+- `paper_trading` lifecycle emits deterministic domain events and deterministic, append-only audit records for fill accepted + risk/rejection failures.
+- Lifecycle events include stable IDs, timestamps, symbol, timeframe (`legacy_config.TIMEFRAME`), session id, signal id, and fill id where available.
+- Idempotency is enforced by skipping event publication/audit write when an audit record for the same deterministic `event_id` already exists.
+- Rejected fills emit explicit `fill_rejected` and `lifecycle_failure` outcomes with reasons, and do not mutate paper ledgers/portfolio.

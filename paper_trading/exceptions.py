@@ -64,3 +64,14 @@ class PaperRiskRejectedError(PaperTradingError):
         detail = message if not reasons else f"{message}: {'; '.join(reasons)}"
         super().__init__(detail, code="paper_risk_rejected")
         self.reasons = reasons
+
+
+class PaperJournalNotFoundError(PaperTradingError):
+    """Raised when a journal entry cannot be found."""
+
+    def __init__(self, journal_id: str) -> None:
+        super().__init__(
+            f"Paper journal entry not found: {journal_id}",
+            code="paper_journal_not_found",
+        )
+        self.journal_id = journal_id

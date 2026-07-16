@@ -12,13 +12,15 @@ from models.signal import ExplainableSignal
 
 
 class PaperSessionStatus(StrEnum):
-    """Lifecycle status for a paper trading session (fill comes in later tasks)."""
+    """Lifecycle status for a paper trading session."""
 
     PREPARED = "prepared"
     RISK_APPROVED = "risk_approved"
     RISK_REJECTED = "risk_rejected"
     REJECTED = "rejected"
-    # Later: FILLED, CANCELLED (PAPER-004+)
+    FILLED = "filled"
+    PARTIALLY_FILLED = "partially_filled"
+    CANCELLED = "cancelled"
 
 
 class PaperOrchestrationRequest(PlatformModel):

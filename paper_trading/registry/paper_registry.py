@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from threading import RLock
 
-from paper_trading.contracts.paper_request import PaperOrchestrationResult
+from paper_trading.contracts.paper_request import (
+    PaperOrchestrationResult,
+    PaperSessionStatus,
+)
 from paper_trading.exceptions import PaperRegistrationError, PaperSessionNotFoundError
 from paper_trading.registry.paper_record import PaperSessionRecord
 
@@ -48,6 +51,35 @@ class PaperSessionRegistry:
             if record is None:
                 raise PaperSessionNotFoundError(session_id)
             return record
+
+    def update_status(
+        self,
+        session_id: str,
+        *,
+        status: PaperSessionStatus,
+        message: str,
+        risk_gate_reasons: tuple[str, ...] = (),
+    ) -> PaperSessionRecord:
+        """Update an existing session status (append-only ledgers remain untouched).
+
+        This is used for PAPER-005 cancellation events before any fill/ledger
+        mutations occur.
+        """
+        with self._lock:
+            record = self._records.get(session_id)
+            if record is None:
+                raise PaperSessionNotFoundError(session_id)
+
+            updated_result = record.result.model_copy(
+                update={
+                    "status": status,
+                    "message": message,
+                    "risk_gate_reasons": risk_gate_reasons,
+                }
+            )
+            updated = record.model_copy(update={"status": status, "result": updated_result})
+            self._records[session_id] = updated
+            return updated
 
     def list_ids(self) -> tuple[str, ...]:
         with self._lock:

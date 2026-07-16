@@ -71,6 +71,10 @@ def sync(dry_run: bool = False) -> None:
         signal_status = "V1.0 accepted; paper trading planning in progress"
     elif active.upper().startswith("PAPER-"):
         signal_status = f"V1.0 accepted; paper trading implementation ({active})"
+    elif active.upper().startswith("BACKTEST-"):
+        signal_status = f"V1.0 accepted; backtesting implementation ({active})"
+    elif active.upper().startswith("VALIDATION-"):
+        signal_status = f"V1.0 accepted; prediction validation implementation ({active})"
     elif active.upper().startswith("SIG-PLAN"):
         signal_status = "Planning in progress"
     elif active.upper().startswith("SIG-"):

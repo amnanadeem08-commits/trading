@@ -32,7 +32,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["models*", "config*", "historical*", "market_data*", "feature_engineering*", "feature_store*", "training_pipeline*", "model_registry*", "inference_pipeline*", "ml_runtime*", "ml_engine_plugins*", "framework_adapters*", "artifact_management*", "storage_providers*", "connectors*", "events*", "versioning*", "audit*", "feature_flags*", "research*", "architecture*", "health*", "metrics*", "platform_logging*", "security*", "notifications*", "monitoring*", "services*", "pipeline*", "workflow*", "data*", "core*", "ml*", "ai*", "decision*", "risk*", "signal_engine*", "paper_trading*", "execution*", "plugins*"]
+include = ["models*", "config*", "historical*", "market_data*", "feature_engineering*", "feature_store*", "training_pipeline*", "model_registry*", "inference_pipeline*", "ml_runtime*", "ml_engine_plugins*", "framework_adapters*", "artifact_management*", "storage_providers*", "connectors*", "events*", "versioning*", "audit*", "feature_flags*", "research*", "architecture*", "health*", "metrics*", "platform_logging*", "security*", "notifications*", "monitoring*", "services*", "pipeline*", "workflow*", "data*", "core*", "ml*", "ai*", "decision*", "risk*", "signal_engine*", "paper_trading*", "backtesting*", "prediction_validation*", "execution*", "plugins*"]
 
 [tool.black]
 line-length = 100
@@ -73,7 +73,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 explicit_package_bases = true
 mypy_path = "."
-packages = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "signal_engine", "paper_trading", "execution", "plugins"]
+packages = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "signal_engine", "paper_trading", "backtesting", "prediction_validation", "execution", "plugins"]
 exclude = ["connectors/binance_connector\\.py", "connectors/psx_connector\\.py", "connectors/pmex_connector\\.py", "core/indicators\\.py", "core/sentiment\\.py", "core/llm_analyzer\\.py"]
 
 [[tool.mypy.overrides]]
@@ -89,7 +89,7 @@ module = "numpy.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests/unit", "tests/ml", "tests/ai", "tests/decision", "tests/risk", "tests/signal_engine", "tests/paper_trading", "tests/execution", "tests/connectors", "tests/paper", "tests/historical", "tests/market_data", "tests/feature_engineering", "tests/feature_store", "tests/training_pipeline", "tests/model_registry", "tests/inference_pipeline", "tests/ml_runtime", "tests/ml_engine_plugins", "tests/framework_adapters", "tests/artifact_management", "tests/storage_providers", "tests/contract", "tests/architecture", "tests/integration"]
+testpaths = ["tests/unit", "tests/ml", "tests/ai", "tests/decision", "tests/risk", "tests/signal_engine", "tests/paper_trading", "tests/backtesting", "tests/prediction_validation", "tests/execution", "tests/connectors", "tests/paper", "tests/historical", "tests/market_data", "tests/feature_engineering", "tests/feature_store", "tests/training_pipeline", "tests/model_registry", "tests/inference_pipeline", "tests/ml_runtime", "tests/ml_engine_plugins", "tests/framework_adapters", "tests/artifact_management", "tests/storage_providers", "tests/contract", "tests/architecture", "tests/integration"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
 markers = [
@@ -141,12 +141,14 @@ markers = [
 "risk/**/*.py" = ["TC001", "TC003"]
 "signal_engine/**/*.py" = ["TC001", "TC003"]
 "paper_trading/**/*.py" = ["TC001", "TC003"]
+"backtesting/**/*.py" = ["TC001", "TC003"]
+"prediction_validation/**/*.py" = ["TC001", "TC003"]
 "execution/**/*.py" = ["TC001", "TC003"]
 "plugins/**/*.py" = ["TC001", "TC003"]
 "scripts/**/*.py" = ["T201", "E501", "TC003", "UP036", "SIM108", "RUF005", "RUF100", "I001"]
 
 [tool.coverage.run]
-source = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "signal_engine", "paper_trading", "execution", "plugins"]
+source = ["models", "config", "historical", "market_data", "feature_engineering", "feature_store", "training_pipeline", "model_registry", "inference_pipeline", "ml_runtime", "ml_engine_plugins", "framework_adapters", "artifact_management", "storage_providers", "connectors", "events", "versioning", "audit", "feature_flags", "research", "architecture", "health", "metrics", "platform_logging", "security", "notifications", "monitoring", "services", "pipeline", "workflow", "data", "core", "ml", "ai", "decision", "risk", "signal_engine", "paper_trading", "backtesting", "prediction_validation", "execution", "plugins"]
 omit = [
     "connectors/binance_connector.py",
     "connectors/psx_connector.py",
@@ -207,6 +209,8 @@ root_packages = [
     "risk",
     "signal_engine",
     "paper_trading",
+    "backtesting",
+    "prediction_validation",
     "execution",
     "plugins",
 ]
@@ -667,6 +671,34 @@ name = "Paper trading must not import forbidden layers"
 type = "forbidden"
 source_modules = ["paper_trading"]
 forbidden_modules = [
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Backtesting must not import forbidden layers"
+type = "forbidden"
+source_modules = ["backtesting"]
+forbidden_modules = [
+    "paper_trading",
+    "execution",
+    "connectors",
+    "api",
+    "dashboard",
+    "research",
+]
+
+[[tool.importlinter.contracts]]
+name = "Prediction validation must not import forbidden layers"
+type = "forbidden"
+source_modules = ["prediction_validation"]
+forbidden_modules = [
+    "paper_trading",
+    "backtesting",
+    "execution",
+    "connectors",
+    "signal_engine",
     "api",
     "dashboard",
     "research",

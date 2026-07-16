@@ -45,14 +45,14 @@ Full code gates + validate_tios
 
 ## Acceptance Criteria
 
-- [ ] Journal entry attachable to paper trade
-- [ ] Retrieval by trade/signal id
-- [ ] Safety notes in docs
+- [x] Journal entry attachable to paper trade
+- [x] Retrieval by trade/signal id
+- [x] Safety notes in docs
 
 ## Status
 
-todo
+complete
 
 ## Completion Notes
 
-_Not started._
+See `PAPER-006_COMPLETION_REPORT.md`.

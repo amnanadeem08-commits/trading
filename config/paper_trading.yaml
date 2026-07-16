@@ -7,3 +7,10 @@ paper_trading:
   refuse_when_live_trading_enabled: true
   # PAPER-003: simulated fill must not proceed without an explicit risk gate.
   risk_gate_required_before_fill: true
+  # PAPER-004: deterministic fill parameters
+  fill_slippage_bps: 5.0
+  fill_commission_bps: 10.0
+  fill_spread_bps: 2.0
+  fill_fraction: 1.0
+  initial_cash: 100000.0
+  default_quantity: 1.0

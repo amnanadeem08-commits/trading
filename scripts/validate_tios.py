@@ -18,6 +18,8 @@ PHASE_DIRS = [
     "phase_tios",
     "phase_signal",
     "phase_paper",
+    "phase_backtest",
+    "phase_validation",
 ]
 
 SPRINT_REQUIRED = [

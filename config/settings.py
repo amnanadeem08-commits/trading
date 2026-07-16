@@ -49,6 +49,12 @@ class PaperTradingSettings(PlatformModel):
     orchestration_enabled: bool = True
     refuse_when_live_trading_enabled: bool = True
     risk_gate_required_before_fill: bool = True
+    fill_slippage_bps: float = Field(ge=0.0, default=5.0)
+    fill_commission_bps: float = Field(ge=0.0, default=10.0)
+    fill_spread_bps: float = Field(ge=0.0, default=2.0)
+    fill_fraction: float = Field(gt=0.0, le=1.0, default=1.0)
+    initial_cash: float = Field(gt=0.0, default=100_000.0)
+    default_quantity: float = Field(gt=0.0, default=1.0)
 
 
 class FeatureFlagSettings(PlatformModel):

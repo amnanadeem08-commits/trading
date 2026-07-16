@@ -1,4 +1,4 @@
-﻿# Khaldun Trade
+﻿﻿# Khaldun Trade
 
 AI-powered trading intelligence platform for **cryptocurrency**, **PMEX**, and **PSX**.
 

@@ -1,17 +1,31 @@
-"""Paper Trading public API — simulated path only; no live brokers."""
+"""Paper trading public API — simulated path only; no live brokers."""
 
 from __future__ import annotations
 
 from paper_trading.contracts import (
+    FillConfig,
+    PaperFillResult,
+    PaperJournalEntry,
+    PaperJournalFilter,
+    PaperJournalReviewNote,
+    PaperJournalSummary,
+    PaperJournalTradeState,
     PaperOrchestrationRequest,
     PaperOrchestrationResult,
     PaperOrderMappingResult,
     PaperOrderRequest,
     PaperOrderSide,
+    PaperPerformanceMetrics,
+    PaperPortfolioState,
     PaperRiskGateResult,
     PaperSessionStatus,
+    PnLLedgerEntry,
+    PositionLedgerEntry,
+    PositionStatus,
+    SimulatedFill,
 )
 from paper_trading.exceptions import (
+    PaperJournalNotFoundError,
     PaperLiveTradingDisabledError,
     PaperMappingError,
     PaperOrchestrationError,
@@ -20,6 +34,28 @@ from paper_trading.exceptions import (
     PaperSessionNotFoundError,
     PaperTradingError,
 )
+from paper_trading.fill import (
+    FillExecutionResult,
+    SimulatedFillExecutor,
+    compute_commission,
+    compute_fill_price,
+)
+from paper_trading.journal import (
+    PaperJournalService,
+    PaperJournalStore,
+    compute_performance_metrics,
+    get_default_paper_journal_service,
+    reset_paper_journal_store,
+    set_default_paper_journal_service,
+)
+from paper_trading.ledger import (
+    PnLLedger,
+    PositionLedger,
+    get_pnl_ledger,
+    get_position_ledger,
+    reset_pnl_ledger,
+    reset_position_ledger,
+)
 from paper_trading.mapping import (
     adapter_context_from_paper_order,
     map_signal_to_paper_order,
@@ -27,6 +63,7 @@ from paper_trading.mapping import (
     reference_price_from_signal,
 )
 from paper_trading.orchestration import PaperTradingOrchestrator
+from paper_trading.portfolio import PaperPortfolioManager
 from paper_trading.registry import (
     PaperSessionRecord,
     PaperSessionRegistry,
@@ -41,6 +78,17 @@ from paper_trading.risk import (
 )
 
 __all__ = [
+    "FillConfig",
+    "FillExecutionResult",
+    "PaperFillResult",
+    "PaperJournalEntry",
+    "PaperJournalFilter",
+    "PaperJournalNotFoundError",
+    "PaperJournalReviewNote",
+    "PaperJournalService",
+    "PaperJournalStore",
+    "PaperJournalSummary",
+    "PaperJournalTradeState",
     "PaperLiveTradingDisabledError",
     "PaperMappingError",
     "PaperOrchestrationError",
@@ -49,6 +97,9 @@ __all__ = [
     "PaperOrderMappingResult",
     "PaperOrderRequest",
     "PaperOrderSide",
+    "PaperPerformanceMetrics",
+    "PaperPortfolioManager",
+    "PaperPortfolioState",
     "PaperRegistrationError",
     "PaperRiskGateResult",
     "PaperRiskRejectedError",
@@ -58,14 +109,31 @@ __all__ = [
     "PaperSessionStatus",
     "PaperTradingError",
     "PaperTradingOrchestrator",
+    "PnLLedger",
+    "PnLLedgerEntry",
+    "PositionLedger",
+    "PositionLedgerEntry",
+    "PositionStatus",
+    "SimulatedFill",
+    "SimulatedFillExecutor",
     "adapter_context_from_paper_order",
     "approval_blocks_fill",
     "build_paper_risk_verdict",
+    "compute_commission",
+    "compute_fill_price",
+    "compute_performance_metrics",
     "evaluate_paper_risk_gate",
+    "get_default_paper_journal_service",
     "get_paper_registry",
+    "get_pnl_ledger",
+    "get_position_ledger",
     "map_signal_to_paper_order",
     "paper_order_from_signal",
     "reference_price_from_signal",
+    "reset_paper_journal_store",
     "reset_paper_registry",
+    "reset_pnl_ledger",
+    "reset_position_ledger",
+    "set_default_paper_journal_service",
     "trading_decision_from_signal",
 ]
